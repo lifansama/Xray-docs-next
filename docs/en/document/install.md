@@ -1,93 +1,112 @@
-# 下载安装
+# Download and Install
 
-## 平台支持
+## Platform Support
 
-Xray 在以下平台中可用：
+- Xray is available on the following platforms:
+  - Windows 7 and later (x86 / amd64 / arm32 / arm64);
+    - If you need to use these version (1.8.18 and later marked with ```win7```, 1.8.6, 1.8.4) in Windows 7, operating system update **KB4474419** is required. For better Internet security, it is recommended to install KB4490628 to acquire later operating system updates from Windows Update.
+  - macOS 10.10 Yosemite and later (amd64 / arm64);
+  - Linux 2.6.23 and later (x86 / amd64 / arm / arm64 / mips64 / mips / ppc64 / s390x / riscv64);
+    - Including but not limited to Debian 7 / 8, Ubuntu 12.04 / 14.04 and subsequent versions, CentOS 7 / 8, Arch Linux, etc.;
+  - FreeBSD (x86 / amd64);
+  - OpenBSD (x86 / amd64);
 
-- Windows 7 及之后版本（x86 / amd64 / arm32）；
-- macOS 10.10 Yosemite 及之后版本（amd64）；
-- Linux 2.6.23 及之后版本（x86 / amd64 / arm / arm64 / mips64 / mips / ppc64 / s390x / riscv64）；
-  - 包括但不限于 Debian 7 / 8、Ubuntu 12.04 / 14.04 及后续版本、CentOS 7 / 8、Arch Linux 等；
-- FreeBSD (x86 / amd64)；
-- OpenBSD (x86 / amd64)；
-- Dragonfly BSD (amd64)；
+## Download Xray
 
-## 下载 Xray
+Precompiled binaries in ZIP format are available at [GitHub Releases](https://github.com/xtls/Xray-core/releases) found in.
 
-预编译的二进制 ZIP 格式压缩包可在 [Github Releases](https://github.com/xtls/Xray-core/releases) 中找到。
+Download the compressed package of the corresponding platform, and use it after decompression.
 
-下载对应平台的压缩包，解压后即可使用。
+## Verify the Installation Package
 
-## 验证安装包
+Xray provides two verification methods:
 
-Xray 提供两种验证方式：
+- SHA1/SHA256 digest of the ZIP archive
+- Reproducible build: Please refer to [Compile Xray](../development/intro/compile.html)
 
-- ZIP 压缩包的 SHA1 / SHA256 摘要
-- 可复现构建：请参照 [编译 Xray](../development/intro/compile.md)
+## Install on Windows
 
-## Windows 安装方式
+- Download the ZIP archive suitable for the Windows platform on [Github Releases](https://github.com/xtls/Xray-core/releases). After decompression, you can get an executable file `xray.exe`, and then run it with [parameters](./command) through the command line.
+- By [Scoop](https://scoop.sh/) Package manager installation: Xray has been added to [Mochi](https://github.com/Qv2ray/mochi).
 
-- 在 [Github Releases](https://github.com/xtls/Xray-core/releases) 下载适用于 Windows 平台的 ZIP 压缩包，解压后可得到可执行文件 `xray.exe`
-  ，然后[通过命令行带参数运行](./command) 即可
-- 通过 [Scoop](https://scoop.sh) 包管理器安装：Xray 已经被添加到 [Mochi](https://github.com/Qv2ray/mochi)。
-- 通过 [Chocolatey](https://chocolatey.org)
-  包管理器安装：[Xray](https://chocolatey.org/packages/xray/1.3.1)，感谢 [Markson](https://chocolatey.org/profiles/markson_ho)
+## Install on macOS
 
-## macOS 安装方式
+- Download the ZIP archive suitable for the macOS platform on [Github Releases](https://github.com/xtls/Xray-core/releases). After decompression, you can get an executable file `xray`, and then run it with [parameters](./command) through the command line.
+- By [Homebrew](https://brew.sh/) Package manager installation: `brew install xray`
+- [homebrew-xray](https://github.com/N4FA/homebrew-xray): Thanks [@N4FA](https://github.com/N4FA)
 
-- 在 [Github Releases](https://github.com/xtls/Xray-core/releases) 下载适用于 macOS 平台的 ZIP 压缩包，解压后可得到可执行文件 `xray`
-  ，然后[通过命令行带参数运行](./command.md) 即可
-- 通过 [Homebrew](https://brew.sh) 包管理器安装：`brew install xray`
+## Install on Linux
 
-## Linux 安装方式
-
-### 安装脚本
+### Install Script
 
 - Linux Script
 
-  - [Xray-install](https://github.com/XTLS/Xray-install)
+  - [XTLS/Xray-install](https://github.com/XTLS/Xray-install) (**Official**)
+  - [tempest](https://github.com/team-cloudchaser/tempest) (supports [`systemd`](https://systemd.io) and [OpenRC](https://github.com/OpenRC/openrc); Linux-only)
 
 * One Click
 
-  - [Xray-script](https://github.com/kirin10000/Xray-script)
-  - [ProxySU](https://github.com/proxysu/ProxySU)
-  - [Xray-agent](https://github.com/mack-a/Xray-agent)
+  - [Xray-REALITY](https://github.com/zxcvos/Xray-script), [xray-reality](https://github.com/sajjaddg/xray-reality), [reality-ezpz](https://github.com/aleskxyz/reality-ezpz)
+  - [Xray_bash_onekey](https://github.com/hello-yunshu/Xray_bash_onekey), [XTool](https://github.com/LordPenguin666/XTool)
+  - [v2ray-agent](https://github.com/mack-a/v2ray-agent), [Xray_onekey](https://github.com/wulabing/Xray_onekey), [ProxySU](https://github.com/proxysu/ProxySU)
 
 * Magisk
-  - [Xray4Magisk](https://github.com/CerteKim/Xray4Magisk)
+  - [Xray4Magisk](https://github.com/Asterisk4Magisk/Xray4Magisk)
   - [Xray_For_Magisk](https://github.com/E7KMbb/Xray_For_Magisk)
 
 ### Arch Linux
 
 #### Arch User Repository
 
-需要使用 [AUR helpers](https://wiki.archlinux.org/index.php/AUR_helpers)，以 [yay](https://github.com/Jguer/yay)
-为例，可通过 `yay -S xray` 安装。
+Need to use [AUR helpers](https://wiki.archlinux.org/index.php/AUR_helpers), [yay](https://github.com/Jguer/yay) as an example, it can be installed via `yay -S xray`.
 
 #### Arch Linux CN
 
-首先添加 [Arch Linux CN 仓库](https://www.archlinuxcn.org/archlinux-cn-repo-and-mirror/)，然后在 root 用户下使用 `pacman -S xray` 安装。
+First add [Arch Linux CN](https://www.archlinuxcn.org/archlinux-cn-repo-and-mirror/) repository, and then use the root user `pacman -S xray`to install.
 
 ### Linuxbrew
 
-Linuxbrew 包管理器的使用方式与 Homebrew 一致：`brew install xray`
+The Linuxbrew package manager is used in the same way as Homebrew: `brew install xray`
 
 ### Debian <Badge text="WIP" type="warning"/>
 
-## Docker 安装方式
+## Install via Docker
 
 - [teddysun/xray](https://hub.docker.com/r/teddysun/xray)
-- Xray-docker
 
-### Docker image 的文件结构
+### The File Structure of the Docker Image
 
-- `/etc/xray/config.json`：配置文件
-- `/usr/bin/xray`：Xray 主程序
-- `/usr/local/share/xray/geoip.dat`：IP 数据文件
-- `/usr/local/share/xray/geosite.dat`：域名数据文件
+- `/etc/xray/config.json`: configuration file
+- `/usr/bin/xray`: Xray main program
+- `/usr/local/share/xray/geoip.dat`: IP data file
+- `/usr/local/share/xray/geosite.dat`: domain name data file
 
-## 更多更多...
+# GUI Client
 
-您可以点击 [传送至众多大佬集结区的任意门](../links.md) 获取更多资源
+- OpenWrt
+  - [PassWall](https://github.com/xiaorouji/openwrt-passwall), [PassWall 2](https://github.com/xiaorouji/openwrt-passwall2)
+  - [ShadowSocksR Plus+](https://github.com/fw876/helloworld)
+  - [luci-app-xray](https://github.com/yichya/luci-app-xray) ([openwrt-xray](https://github.com/yichya/openwrt-xray))
+- Windows
+  - [v2rayN](https://github.com/2dust/v2rayN)
+  - [Furious](https://github.com/LorenEteval/Furious)
+  - [Invisible Man - Xray](https://github.com/InvisibleManVPN/InvisibleMan-XRayClient)
+- Android
+  - [v2rayNG](https://github.com/2dust/v2rayNG)
+  - [X-flutter](https://github.com/XTLS/X-flutter)
+  - [SaeedDev94/Xray](https://github.com/SaeedDev94/Xray)
+- iOS & macOS arm64
+  - [FoXray](https://apps.apple.com/app/foxray/id6448898396)
+  - [Streisand](https://apps.apple.com/app/streisand/id6450534064)
+- macOS arm64 & x64
+  - [V2rayU](https://github.com/yanue/V2rayU)
+  - [V2RayXS](https://github.com/tzmax/V2RayXS)
+  - [Furious](https://github.com/LorenEteval/Furious)
+  - [FoXray](https://apps.apple.com/app/foxray/id6448898396)
+- Linux
+  - [v2rayA](https://github.com/v2rayA/v2rayA)
+  - [Furious](https://github.com/LorenEteval/Furious)
 
-## FAQ <Badge text="WIP" type="warning"/>
+# UUID Generator
+
+Third-party UUID generator [uuidgenerator.net](https://www.uuidgenerator.net)

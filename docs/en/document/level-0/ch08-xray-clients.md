@@ -41,7 +41,7 @@
 - 服务器【地址】: `a-name.yourdomain.com`
 - 服务器【端口】: `443`
 - 连接的【协议】: `vless`
-- 连接的【流控】: `xtls-rprx-direct` (direct 模式适合全平台，若是 Linux/安卓用户，可改成 `xtls-rprx-splice` 性能全开)
+- 连接的【流控】: `xtls-rprx-vision` (vision 模式适合全平台)
 - 连接的【验证】: `uuiduuid-uuid-uuid-uuiduuiduuid`
 - 连接的【安全】: `"allowInsecure": false`
 
@@ -68,8 +68,14 @@
   - 请根据该客户端的说明进行设置
 
 - **Qv2ray - 跨平台图形界面，适用于 Linux, Windows, macOS**
+
   - 请从它的[GitHub 仓库 Release 页面](https://github.com/Qv2ray/Qv2ray/releases)获取最新版（还可以从它的[GitHub 自动构建仓库](https://github.com/Qv2ray/Qv2ray/actions)寻找更新的版本）
   - 请从它的[项目主页](https://qv2ray.net/)学习文档
+  - 请根据该客户端的说明进行设置
+
+- **V2RayXS - 基于 V2RayX 开发的一款使用 xray-core 的 macOS 客户端**
+  - 请从它的 [GitHub 仓库 Release 页面](https://github.com/tzmax/v2rayXS/releases) 获取最新版
+  - 支持一键导入 [VMessAEAD / VLESS 分享链接标准提案](https://github.com/XTLS/Xray-core/issues/91) 为标准的分享链接
   - 请根据该客户端的说明进行设置
 
 到这一步，你的全套配置就已经可以正常使用啦！
@@ -99,7 +105,7 @@
    - 请将 `serverName` 替换成你的真实域名
    - 各个配置模块的说明我都已经（很啰嗦的）放在对应的配置点上了
 
-   ```json5
+   ```json
    // REFERENCE:
    // https://github.com/XTLS/Xray-examples
    // https://xtls.github.io/config/
@@ -114,135 +120,141 @@
    {
      // 1_日志设置
      // 注意，本例中我默认注释掉了日志文件，因为windows, macOS, Linux 需要写不同的路径，请自行配置
-     log: {
+     "log": {
        // "access": "/home/local/xray_log/access.log",    // 访问记录
        // "error": "/home/local/xray_log/error.log",    // 错误记录
-       loglevel: "warning", // 内容从少到多: "none", "error", "warning", "info", "debug"
+       "loglevel": "warning" // 内容从少到多: "none", "error", "warning", "info", "debug"
      },
 
      // 2_DNS设置
-     dns: {
-       servers: [
+     "dns": {
+       "servers": [
          // 2.1 国外域名使用国外DNS查询
          {
-           address: "1.1.1.1",
-           domains: ["geosite:geolocation-!cn"],
+           "address": "1.1.1.1",
+           "domains": ["geosite:geolocation-!cn"]
          },
          // 2.2 国内域名使用国内DNS查询，并期待返回国内的IP，若不是国内IP则舍弃，用下一个查询
          {
-           address: "223.5.5.5",
-           domains: ["geosite:cn"],
-           expectIPs: ["geoip:cn"],
+           "address": "223.5.5.5",
+           "domains": ["geosite:cn"],
+           "expectIPs": ["geoip:cn"]
          },
          // 2.3 作为2.2的备份，对国内网站进行二次查询
          {
-           address: "114.114.114.114",
-           domains: ["geosite:cn"],
+           "address": "114.114.114.114",
+           "domains": ["geosite:cn"]
          },
          // 2.4 最后的备份，上面全部失败时，用本机DNS查询
-         "localhost",
-       ],
+         "localhost"
+       ]
      },
 
      // 3_分流设置
      // 所谓分流，就是将符合否个条件的流量，用指定`tag`的出站协议去处理（对应配置的5.x内容）
-     routing: {
-       domainStrategy: "AsIs",
-       rules: [
+     "routing": {
+       "domainStrategy": "IPIfNonMatch",
+       "rules": [
          // 3.1 广告域名屏蔽
          {
-           type: "field",
-           domain: ["geosite:category-ads-all"],
-           outboundTag: "block",
+           "type": "field",
+           "domain": ["geosite:category-ads-all"],
+           "outboundTag": "block"
          },
          // 3.2 国内域名直连
          {
-           type: "field",
-           domain: ["geosite:cn"],
-           outboundTag: "direct",
+           "type": "field",
+           "domain": ["geosite:cn"],
+           "outboundTag": "direct"
          },
-         // 3.3 国内IP直连
+         // 3.3 国外域名代理
          {
-           type: "field",
-           ip: ["geoip:cn", "geoip:private"],
-           outboundTag: "direct",
+           "type": "field",
+           "domain": ["geosite:geolocation-!cn"],
+           "outboundTag": "proxy"
          },
-         // 3.4 国外域名代理
+         // 3.4 走国内"223.5.5.5"的DNS查询流量分流走direct出站
          {
-           type: "field",
-           domain: ["geosite:geolocation-!cn"],
-           outboundTag: "proxy",
+           "type": "field",
+           "ip": ["223.5.5.5"],
+           "outboundTag": "direct"
          },
-         // 3.5 默认规则
+         // 3.5 国内IP直连
+         {
+           "type": "field",
+           "ip": ["geoip:cn", "geoip:private"],
+           "outboundTag": "direct"
+         }
+         // 3.6 默认规则
          // 在Xray中，任何不符合上述路由规则的流量，都会默认使用【第一个outbound（5.1）】的设置，所以一定要把转发VPS的outbound放第一个
-       ],
+       ]
      },
 
      // 4_入站设置
-     inbounds: [
+     "inbounds": [
        // 4.1 一般都默认使用socks5协议作本地转发
        {
-         tag: "socks-in",
-         protocol: "socks",
-         listen: "127.0.0.1", // 这个是通过socks5协议做本地转发的地址
-         port: 10800, // 这个是通过socks5协议做本地转发的端口
-         settings: {
-           udp: true,
-         },
+         "tag": "socks-in",
+         "protocol": "socks",
+         "listen": "127.0.0.1", // 这个是通过socks5协议做本地转发的地址
+         "port": 10800, // 这个是通过socks5协议做本地转发的端口
+         "settings": {
+           "udp": true
+         }
        },
        // 4.2 有少数APP不兼容socks协议，需要用http协议做转发，则可以用下面的端口
        {
-         tag: "http-in",
-         protocol: "http",
-         listen: "127.0.0.1", // 这个是通过http协议做本地转发的地址
-         port: 10801, // 这个是通过http协议做本地转发的端口
-       },
+         "tag": "http-in",
+         "protocol": "http",
+         "listen": "127.0.0.1", // 这个是通过http协议做本地转发的地址
+         "port": 10801 // 这个是通过http协议做本地转发的端口
+       }
      ],
 
      // 5_出站设置
-     outbounds: [
+     "outbounds": [
        // 5.1 默认转发VPS
-       // 一定放在第一个，在routing 3.5 里面已经说明了，这等于是默认规则，所有不符合任何规则的流量都走这个
+       // 一定放在第一个，在routing 3.6 里面已经说明了，这等于是默认规则，所有不符合任何规则的流量都走这个
        {
-         tag: "proxy",
-         protocol: "vless",
-         settings: {
-           vnext: [
+         "tag": "proxy",
+         "protocol": "vless",
+         "settings": {
+           "vnext": [
              {
-               address: "a-name.yourdomain.com", // 替换成你的真实域名
-               port: 443,
-               users: [
+               "address": "a-name.yourdomain.com", // 替换成你的真实域名
+               "port": 443,
+               "users": [
                  {
-                   id: "uuiduuid-uuid-uuid-uuid-uuiduuiduuid", // 和服务器端的一致
-                   flow: "xtls-rprx-direct", // Windows, macOS 同学保持这个不变
-                   // "flow": "xtls-rprx-splice",    // Linux和安卓同学请改成Splice性能更强
-                   encryption: "none",
-                   level: 0,
-                 },
-               ],
-             },
-           ],
+                   "id": "uuiduuid-uuid-uuid-uuid-uuiduuiduuid", // 和服务器端的一致
+                   "flow": "xtls-rprx-vision",
+                   "encryption": "none",
+                   "level": 0
+                 }
+               ]
+             }
+           ]
          },
-         streamSettings: {
-           network: "tcp",
-           security: "xtls",
-           xtlsSettings: {
-             serverName: "a-name.yourdomain.com", // 替换成你的真实域名
-             allowInsecure: false, // 禁止不安全证书
-           },
-         },
+         "streamSettings": {
+           "network": "tcp",
+           "security": "tls",
+           "tlsSettings": {
+             "serverName": "a-name.yourdomain.com", // 替换成你的真实域名
+             "allowInsecure": false, // 禁止不安全证书
+             "fingerprint": "chrome" // 通过 uTLS 库 模拟 Chrome / Firefox / Safari 或随机生成的指纹
+           }
+         }
        },
        // 5.2 用`freedom`协议直连出站，即当routing中指定'direct'流出时，调用这个协议做处理
        {
-         tag: "direct",
-         protocol: "freedom",
+         "tag": "direct",
+         "protocol": "freedom"
        },
        // 5.3 用`blackhole`协议屏蔽流量，即当routing中指定'block'时，调用这个协议做处理
        {
-         tag: "block",
-         protocol: "blackhole",
-       },
-     ],
+         "tag": "block",
+         "protocol": "blackhole"
+       }
+     ]
    }
    ```
 

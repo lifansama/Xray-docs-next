@@ -41,7 +41,7 @@
 - 服务器【地址】: `a-name.yourdomain.com`
 - 服务器【端口】: `443`
 - 连接的【协议】: `vless`
-- 连接的【流控】: `xtls-rprx-direct` (direct 模式适合全平台，若是 Linux/安卓用户，可改成 `xtls-rprx-splice` 性能全开)
+- 连接的【流控】: `xtls-rprx-vision` (vision 模式适合全平台)
 - 连接的【验证】: `uuiduuid-uuid-uuid-uuiduuiduuid`
 - 连接的【安全】: `"allowInsecure": false`
 
@@ -167,26 +167,26 @@
            "domain": ["geosite:cn"],
            "outboundTag": "direct"
          },
-         // 3.3 国内IP直连
-         {
-           "type": "field",
-           "ip": ["geoip:cn", "geoip:private"],
-           "outboundTag": "direct"
-         },
-         // 3.4 国外域名代理
+         // 3.3 国外域名代理
          {
            "type": "field",
            "domain": ["geosite:geolocation-!cn"],
            "outboundTag": "proxy"
          },
-         // 3.5 默认规则
-         // 在Xray中，任何不符合上述路由规则的流量，都会默认使用【第一个outbound（5.1）】的设置，所以一定要把转发VPS的outbound放第一个
-         // 3.6 走国内"223.5.5.5"的DNS查询流量分流走direct出站
+         // 3.4 走国内"223.5.5.5"的DNS查询流量分流走direct出站
          {
            "type": "field",
            "ip": ["223.5.5.5"],
            "outboundTag": "direct"
+         },
+         // 3.5 国内IP直连
+         {
+           "type": "field",
+           "ip": ["geoip:cn", "geoip:private"],
+           "outboundTag": "direct"
          }
+         // 3.6 默认规则
+         // 在Xray中，任何不符合上述路由规则的流量，都会默认使用【第一个outbound（5.1）】的设置，所以一定要把转发VPS的outbound放第一个
        ]
      },
 
@@ -214,7 +214,7 @@
      // 5_出站设置
      "outbounds": [
        // 5.1 默认转发VPS
-       // 一定放在第一个，在routing 3.5 里面已经说明了，这等于是默认规则，所有不符合任何规则的流量都走这个
+       // 一定放在第一个，在routing 3.6 里面已经说明了，这等于是默认规则，所有不符合任何规则的流量都走这个
        {
          "tag": "proxy",
          "protocol": "vless",
@@ -226,8 +226,7 @@
                "users": [
                  {
                    "id": "uuiduuid-uuid-uuid-uuid-uuiduuiduuid", // 和服务器端的一致
-                   "flow": "xtls-rprx-direct", // Windows, macOS 同学保持这个不变
-                   // "flow": "xtls-rprx-splice",    // Linux和安卓同学请改成Splice性能更强
+                   "flow": "xtls-rprx-vision",
                    "encryption": "none",
                    "level": 0
                  }
@@ -237,10 +236,11 @@
          },
          "streamSettings": {
            "network": "tcp",
-           "security": "xtls",
-           "xtlsSettings": {
+           "security": "tls",
+           "tlsSettings": {
              "serverName": "a-name.yourdomain.com", // 替换成你的真实域名
-             "allowInsecure": false // 禁止不安全证书
+             "allowInsecure": false, // 禁止不安全证书
+             "fingerprint": "chrome" // 通过 uTLS 库 模拟 Chrome / Firefox / Safari 或随机生成的指纹
            }
          }
        },

@@ -6,14 +6,15 @@
 
 - 支持 TCP 和 UDP 数据包转发，其中 UDP 可选择性关闭；
 - 推荐的加密方式：
-    - 2022-blake3-aes-128-gcm
-    - 2022-blake3-aes-256-gcm
-    - 2022-blake3-chacha20-poly1305
+  - 2022-blake3-aes-128-gcm
+  - 2022-blake3-aes-256-gcm
+  - 2022-blake3-chacha20-poly1305
 - 其他加密方式
-    - aes-256-gcm
-    - aes-128-gcm
-    - chacha20-poly1305 或称 chacha20-ietf-poly1305
-    - none 或 plain
+  - aes-256-gcm
+  - aes-128-gcm
+  - chacha20-poly1305 或称 chacha20-ietf-poly1305
+  - xchacha20-poly1305 或称 xchacha20-ietf-poly1305
+  - none 或 plain
 
 Shadowsocks 2022 新协议格式提升了性能并带有完整的重放保护，解决了旧协议的以下安全问题：
 
@@ -37,6 +38,8 @@ Shadowsocks 2022 新协议格式提升了性能并带有完整的重放保护，
       "port": 1234,
       "method": "加密方式",
       "password": "密码",
+      "uot": true,
+      "UoTVersion": 2,
       "level": 0
     }
   ]
@@ -56,6 +59,8 @@ Shadowsocks 2022 新协议格式提升了性能并带有完整的重放保护，
   "port": 1234,
   "method": "加密方式",
   "password": "密码",
+  "uot": true,
+  "UoTVersion": 2,
   "level": 0
 }
 ```
@@ -80,17 +85,27 @@ Shadowsocks 服务端端口。必填。
 
 必填。
 
+> `uot`: bool
+
+启用`udp over tcp`。
+
+> `UoTVersion`: number
+
+`UDP over TCP` 的实现版本。
+
+当前可选值：`1`, `2`
+
 - Shadowsocks 2022
 
 使用与 WireGuard 类似的预共享密钥作为密码。
 
 使用 `openssl rand -base64 <长度>` 以生成与 shadowsocks-rust 兼容的密钥，长度取决于所使用的加密方法。
 
-| 加密方法                          | 密钥长度 |
-|-------------------------------|-----:|
-| 2022-blake3-aes-128-gcm       |   16 |
-| 2022-blake3-aes-256-gcm       |   32 |
-| 2022-blake3-chacha20-poly1305 |   32 |
+| 加密方法                      | 密钥长度 |
+| ----------------------------- | -------: |
+| 2022-blake3-aes-128-gcm       |       16 |
+| 2022-blake3-aes-256-gcm       |       32 |
+| 2022-blake3-chacha20-poly1305 |       32 |
 
 在 Go 实现中，32 位密钥始终工作。
 

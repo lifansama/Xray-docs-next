@@ -2,7 +2,7 @@
 
 欢迎继续学习 `Xray` 的【路由】功能！
 
-在 [《路由 (routing) 功能简析（上）》](./routing-lv1-part1) 中，我们已经对【路由】功能的工作逻辑有了清晰的理解，也基于 `geosite.dat` 文件做了简单的域名分流配置。
+在 [《路由 (routing) 功能简析（上）》](./routing-lv1-part1.md) 中，我们已经对【路由】功能的工作逻辑有了清晰的理解，也基于 `geosite.dat` 文件做了简单的域名分流配置。
 
 如前面所说，域名分流仅仅是【路由】功能的牛刀小试而已。下面就让我们来看看除了域名之外，还什么可以用做分流依据的东西吧！
 
@@ -50,41 +50,37 @@
 
 上述配置如下：
 
-```json5
-"routing": {
+```json
+{
+  "routing": {
     "domainStrategy": "AsIs",
     "rules": [
-        // 指定子域名直连
-        {
-            "type": "field",
-            "domain": [
-                "full:direct.yourdomain.com"
-            ],
-            "outboundTag": "direct-out"
-        },
-        // 指定子域名转发VPS
-        {
-            "type": "field",
-            "domain": [
-                "full:proxy.yourdomain.com"
-            ],
-            "outboundTag": "proxy-out-vless"
-        },
-        // 指定泛域名转发VPS
-        {
-            "type": "field",
-            "domain": [
-                "yourdomain.com"
-            ],
-            "outboundTag": "proxy-out-vless"
-        }
+      // 指定子域名直连
+      {
+        "type": "field",
+        "domain": ["full:direct.yourdomain.com"],
+        "outboundTag": "direct-out"
+      },
+      // 指定子域名转发VPS
+      {
+        "type": "field",
+        "domain": ["full:proxy.yourdomain.com"],
+        "outboundTag": "proxy-out-vless"
+      },
+      // 指定泛域名转发VPS
+      {
+        "type": "field",
+        "domain": ["yourdomain.com"],
+        "outboundTag": "proxy-out-vless"
+      }
     ]
+  }
 }
 ```
 
 ### 5.2 基于 IP 文件分流：`geoip.dat`
 
-与 `geosite.dat` 规则文件十分类似的，我们还有 `geoip.dat` 这个规则文件，它致力于为用户提供成熟完善的【IP 分类表】。让用户可以简单的通过 `geoip:xxx` 这种格式方便的调用任何子类，定制符合自身需求的路由规则 。
+除了使用 `geosite.dat` 核心自然也支持直接使用IP进行路由以满足各种需求。
 
 1. 解决前面的 `[问题3], [问题4]`，我们使用 `geoip:private` 类别来指定 `[direct-out]`
 2. 解决前面的 `[问题7]`，我们使用 `geoip:cn` 类别来指定 `[direct-out]`
@@ -92,27 +88,25 @@
 
 上述配置如下：
 
-```json5
-"routing": {
+```json
+{
+  "routing": {
     "domainStrategy": "AsIs",
     "rules": [
-        // 本机内部地址、局域网地址直连
-        {
-            "type": "field",
-            "ip": [
-                "geoip:private"
-            ],
-            "outboundTag": "direct-out"
-        },
-        // 国内IP集直连
-        {
-            "type": "field",
-            "ip": [
-                "geoip:cn"
-            ],
-            "outboundTag": "direct-out"
-        }
+      // 本机内部地址、局域网地址直连
+      {
+        "type": "field",
+        "ip": ["geoip:private"],
+        "outboundTag": "direct-out"
+      },
+      // 国内IP集直连
+      {
+        "type": "field",
+        "ip": ["geoip:cn"],
+        "outboundTag": "direct-out"
+      }
     ]
+  }
 }
 ```
 
@@ -125,27 +119,25 @@
 
 上述配置如下：
 
-```json5
-"routing": {
+```json
+{
+  "routing": {
     "domainStrategy": "AsIs",
     "rules": [
-        // 指定IP地址直连
-        {
-            "type": "field",
-            "ip": [
-                "223.5.5.5"
-            ],
-            "outboundTag": "direct-out"
-        },
-        // 指定IP地址转发VPS
-        {
-            "type": "field",
-            "ip": [
-                "1.1.1.1"
-            ],
-            "outboundTag": "proxy-out-vless"
-        }
+      // 指定IP地址直连
+      {
+        "type": "field",
+        "ip": ["223.5.5.5"],
+        "outboundTag": "direct-out"
+      },
+      // 指定IP地址转发VPS
+      {
+        "type": "field",
+        "ip": ["1.1.1.1"],
+        "outboundTag": "proxy-out-vless"
+      }
     ]
+  }
 }
 ```
 
@@ -157,19 +149,19 @@
 你需要打开入站代理中的 `sniffing` 才能使用此种方式分流。
 :::
 
-```json5
-"routing": {
+```json
+{
+  "routing": {
     "domainStrategy": "AsIs",
     "rules": [
-        // 指定 BT 协议直连
-        {
-            "type": "field",
-            "protocol": [
-                "bittorrent"
-            ],
-            "outboundTag": "direct-out"
-        }
+      // 指定 BT 协议直连
+      {
+        "type": "field",
+        "protocol": ["bittorrent"],
+        "outboundTag": "direct-out"
+      }
     ]
+  }
 }
 ```
 
@@ -205,69 +197,58 @@
 `[1-block] --> [2-direct] --> [3-proxy] --> [4-first-outbound]`
 :::
 
-```json5
-"routing": {
+```json
+{
+  "routing": {
     "domainStrategy": "AsIs",
     "rules": [
-        // [1-block 广告流量屏蔽]
-        // 1.1  广告域名集屏蔽
-        {
-            "type": "field",
-            "domain": [
-                "geosite:category-ads-all"
-            ],
-            "outboundTag": "block"
-        },
-        // [2-direct 国内流量直连]
-        // 2.1 国内域名集、指定子域名直连
-        {
-            "type": "field",
-            "domain": [
-                "geosite:cn",
-                "full:direct.yourdomain.com"
-            ],
-            "outboundTag": "direct-out"
-        },
-        // 2.2 本机内部地址+局域网、国内IP、指定IP直连
-        {
-            "type": "field",
-            "ip": [
-                "geoip:private",
-                "geoip:cn",
-                "223.5.5.5"
-            ],
-            "outboundTag": "direct-out"
-        },
-        // 2.3 BT协议流量直连
-        {
-            "type": "field",
-            "protocol": [
-                "bittorrent"
-            ],
-            "outboundTag": "direct-out"
-        },
-        // [3-proxy 国外流量转发VPS]
-        // 3.1 国外域名集、指定子域名、指定泛域名转发VPS
-        {
-            "type": "field",
-            "domain": [
-                "geosite:geolocation-!cn",
-                "full:proxy.yourdomain.com",
-                "yourdomain.com"
-            ],
-            "outboundTag": "proxy-out-vless"
-        },
-        // 3.2 指定IP转发VPS
-        {
-            "type": "field",
-            "ip": [
-                "1.1.1.1"
-            ],
-            "outboundTag": "proxy-out-vless"
-        }
-        // [4-default-routing 第一条出站]
-        // 没有匹配到任何规则的流量，默认使用第一条出站处理
+      // [1-block 广告流量屏蔽]
+      // 1.1  广告域名集屏蔽
+      {
+        "type": "field",
+        "domain": ["geosite:category-ads-all"],
+        "outboundTag": "block"
+      },
+      // [2-direct 国内流量直连]
+      // 2.1 国内域名集、指定子域名直连
+      {
+        "type": "field",
+        "domain": ["geosite:cn", "full:direct.yourdomain.com"],
+        "outboundTag": "direct-out"
+      },
+      // 2.2 本机内部地址+局域网、国内IP、指定IP直连
+      {
+        "type": "field",
+        "ip": ["geoip:private", "geoip:cn", "223.5.5.5"],
+        "outboundTag": "direct-out"
+      },
+      // 2.3 BT协议流量直连
+      {
+        "type": "field",
+        "protocol": ["bittorrent"],
+        "outboundTag": "direct-out"
+      },
+      // [3-proxy 国外流量转发VPS]
+      // 3.1 国外域名集、指定子域名、指定泛域名转发VPS
+      {
+        "type": "field",
+        "domain": [
+          "geosite:geolocation-!cn",
+          "full:proxy.yourdomain.com",
+          "yourdomain.com"
+        ],
+        "outboundTag": "proxy-out-vless"
+      },
+      // 3.2 指定IP转发VPS
+      {
+        "type": "field",
+        "ip": ["1.1.1.1"],
+        "outboundTag": "proxy-out-vless"
+      }
+      // [4-default-routing 第一条出站]
+      // 没有匹配到任何规则的流量，默认使用第一条出站处理
     ]
+  }
 }
 ```
 
@@ -325,21 +306,19 @@
 
 为了实现上面的目标，他写出了以下路由规则：
 
-```json5
-"routing": {
+```json
+{
+  "routing": {
     "domainStrategy": "AsIs",
     "rules": [
-        {
-            "type": "field",
-            "ip": [
-                "223.5.5.5"
-            ],
-            "domain": [
-                "full:direct.yourdomain.com"
-            ],
-            "outboundTag": "direct-out"
-        }
+      {
+        "type": "field",
+        "ip": ["223.5.5.5"],
+        "domain": ["full:direct.yourdomain.com"],
+        "outboundTag": "direct-out"
+      }
     ]
+  }
 }
 ```
 
@@ -357,25 +336,23 @@
 
 正确示范，自然就是将不同的匹配依据独立出来：
 
-```json5
-"routing": {
+```json
+{
+  "routing": {
     "domainStrategy": "AsIs",
     "rules": [
-        {
-            "type": "field",
-            "ip": [
-                "223.5.5.5"
-            ],
-            "outboundTag": "direct-out"
-        },
-        {
-            "type": "field",
-            "domain": [
-                "full:direct.yourdomain.com"
-            ],
-            "outboundTag": "direct-out"
-        }
+      {
+        "type": "field",
+        "ip": ["223.5.5.5"],
+        "outboundTag": "direct-out"
+      },
+      {
+        "type": "field",
+        "domain": ["full:direct.yourdomain.com"],
+        "outboundTag": "direct-out"
+      }
     ]
+  }
 }
 ```
 

@@ -1,14 +1,13 @@
 ---
-title: 配置文件
-lang: zh-CN
+title: Configurations
+lang: en-US
 ---
 
-> **这个章节将告诉您所有的 Xray 配置细节，掌握这些内容，在您手中 Xray 将发挥更大威力。**
+> **This section will tell you all the details of Xray configuration. By mastering these contents, Xray will unleash its full power in your hands.**
 
-## 概述
+## Overview
 
-Xray 的配置文件为 json 格式, 客户端和服务端的配置格式没有区别, 只是实际的配置内容不一样。  
-形式如下:
+The configuration file of Xray is in JSON format, and the configuration format for the client and server is the same, except for the actual configuration content. It takes the following form:
 
 ```json
 {
@@ -22,56 +21,71 @@ Xray 的配置文件为 json 格式, 客户端和服务端的配置格式没有�
   "transport": {},
   "stats": {},
   "reverse": {},
-  "fakedns": {}
+  "fakedns": {},
+  "metrics": {},
+  "observatory": {},
+  "burstObservatory": {}
 }
 ```
 
 ::: warning
-如果你刚接触 Xray, 您可以先点击查看[快速入门中的配置运行](../document/install.md), 学习最基本的配置方式, 然后查看本章节内容以掌握所有 Xray 的配置方式。
+If you are new to Xray, you can first click to view [configuration and running in the Quick Start guide](../document/install.md), to learn the most basic configuration method, and then refer to the contents of this section to master all the configuration methods of Xray.
 :::
 
-## 基础配置模块
+## Basic Configuration Modules
 
 > log:[LogObject](./log.md)
 
-日志配置，控制 Xray 输出日志的方式.
+Log configurations, controlling how Xray emits logs.
 
 > api:[ApiObject](./api.md)
 
-提供了一些 API 接口供远程调用。
+Configures how Xray provides API interfaces for calling remotely.
 
 > dns: [DnsObject](./dns.md)
 
-内置的 DNS 服务器. 如果没有配置此项，则使用系统的 DNS 设置。
+Configures the built-in DNS server. System DNS will be used if not configured.
 
 > routing: [RoutingObject](./routing.md)
 
-路由功能。可以设置规则分流数据从不同的 outbound 发出.
+Configures routing. Specify rules to route connections through different outbounds.
 
 > policy: [PolicyObject](./policy.md)
 
-本地策略，可以设置不同的用户等级和对应的策略设置。
+Local policy configurations, specifying different user levels and corresponding policies.
 
 > inbounds: \[ [InboundObject](./inbound.md) \]
 
-一个数组，每个元素是一个入站连接配置。
+An array of inbound connection configurations.
 
 > outbounds: \[ [OutboundObject](./outbound.md) \]
 
-一个数组，每个元素是一个出站连接配置。
+An array of outbound connection configurations.
 
 > transport: [TransportObject](./transport.md)
 
-用于配置 Xray 其它服务器建立和使用网络连接的方式。
+Configures how Xray establishes and uses network connections to other servers.
 
 > stats: [StatsObject](./stats.md)
 
-用于配置流量数据的统计。
+Configures traffic statistics.
 
 > reverse: [ReverseObject](./reverse.md)
 
-反向代理。可以把服务器端的流量向客户端转发，即逆向流量转发。
+Configures the built-in reverse proxy. You can forward server traffic to the client, effectively achieving reverse proxying.
 
 > fakedns: [FakeDnsObject](./fakedns.md)
 
-FakeDNS 配置。可配合透明代理使用，以获取实际域名。
+FakeDNS configuration. Can be used with a transparent proxy to obtain the actual domains.
+
+> metrics: [metricsObject](./metrics.md)
+
+Metrics configuration. A more straightforward (and hopefully better) way to export metrics.
+
+> observatory: [ObservatoryObject](./observatory.md#observatoryobject)
+
+Background connection observation. Detect the connection status of outbound proxies.
+
+> burstObservatory: [BurstObservatoryObject](./observatory.md#burstobservatoryobject)
+
+Concurrent connection observation. Detect the connection status of outbound proxies.

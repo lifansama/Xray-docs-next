@@ -1,26 +1,29 @@
 # Shadowsocks
 
-[Shadowsocks](https://zh.wikipedia.org/wiki/Shadowsocks) 协议，兼容大部分其它版本的实现。
+[Shadowsocks](https://en.wikipedia.org/wiki/Shadowsocks) protocol is compatible with most other implementations.
 
-目前兼容性如下：
+Here are the features and compatibility of Shadowsocks:
 
-- 支持 TCP 和 UDP 数据包转发，其中 UDP 可选择性关闭；
-- 推荐的加密方式：
+- It supports TCP and UDP packet forwarding, with the option to disable UDP.
+- Recommended encryption methods:
+  - 2022-blake3-aes-128-gcm
+  - 2022-blake3-aes-256-gcm
+  - 2022-blake3-chacha20-poly1305
+- Other encryption methods:
+  - aes-256-gcm
+  - aes-128-gcm
+  - chacha20-poly1305 (also known as chacha20-ietf-poly1305)
+  - none or plain
 
-  - AES-256-GCM
-  - AES-128-GCM
-  - ChaCha20-Poly1305 或称 ChaCha20-IETF-Poly1305
-  - none 或 plain
+The new protocol format of Shadowsocks 2022 improves performance and includes full replay protection, addressing security issues present in the old protocol:
 
-  不推荐的加密方式:
-
-  - AES-256-CFB
-  - AES-128-CFB
-  - ChaCha20
-  - ChaCha20-IETF
+- [Serious vulnerabilities in Shadowsocks AEAD encryption methods that compromise the integrity of communications](https://github.com/shadowsocks/shadowsocks-org/issues/183)
+- Increasing false-positive rate of TCP replay filters over time
+- Lack of replay protection for UDP
+- TCP behaviors that can be used for active probing
 
 ::: danger
-"none" 不加密方式下，服务器端不会验证 "password" 中的密码。为确保安全性, 一般需要加上 TLS 并在传输层使用安全配置，例如 WebSocket 配置较长的 path
+Using the "none" encryption method will transmit traffic in plaintext. It is not recommended to use "none" encryption on public networks to ensure security.
 :::
 
 ## OutboundConfigurationObject
@@ -32,8 +35,9 @@
       "email": "love@xray.com",
       "address": "127.0.0.1",
       "port": 1234,
-      "method": "加密方式",
-      "password": "密码",
+      "method": "encryption method",
+      "password": "password",
+      "uot": true,
       "level": 0
     }
   ]
@@ -42,7 +46,7 @@
 
 > `servers`: \[[ServerObject](#serverobject)\]
 
-一个数组，代表一组 Shadowsocks 服务端设置, 其中每一项是一个 [ServerObject](#serverobject)。
+An array representing a group of Shadowsocks server settings, where each item is a [ServerObject](#serverobject).
 
 ### ServerObject
 
@@ -51,42 +55,57 @@
   "email": "love@xray.com",
   "address": "127.0.0.1",
   "port": 1234,
-  "method": "加密方式",
-  "password": "密码",
+  "method": "encryption method",
+  "password": "password",
+  "uot": true,
   "level": 0
 }
 ```
 
 > `email`: string
 
-邮件地址，可选，用于标识用户
+Email address (optional) used to identify the user.
 
 > `address`: address
 
-Shadowsocks 服务端地址，支持 IPv4、IPv6 和域名。必填。
+The address of the Shadowsocks server, supporting IPv4, IPv6, and domain names. Required.
 
 > `port`: number
 
-Shadowsocks 服务端端口。必填。
+The port of the Shadowsocks server. Required.
 
 > `method`: string
 
-必填。
-
-- 推荐的加密方式：
-  - AES-256-GCM
-  - AES-128-GCM
-  - ChaCha20-Poly1305 或称 ChaCha20-IETF-Poly1305
-  - none 或 plain
+Encryption method. Required.
 
 > `password`: string
 
-必填。任意字符串。
+Password. Required.
 
-Shadowsocks 协议不限制密码长度，但短密码会更可能被破解，建议使用 16 字符或更长的密码。
+> `uot`: bool
+
+When enabled, UDP over TCP (UOT) will be used.
+
+- Shadowsocks 2022
+
+Use a pre-shared key (PSK) similar to WireGuard as the password.
+
+To generate a compatible key with shadowsocks-rust, use `openssl rand -base64 <length>`, where the length depends on the encryption method used.
+
+| Encryption Method             | Key Length |
+| ----------------------------- | ---------: |
+| 2022-blake3-aes-128-gcm       |         16 |
+| 2022-blake3-aes-256-gcm       |         32 |
+| 2022-blake3-chacha20-poly1305 |         32 |
+
+In the Go implementation, a 32-byte key always works.
+
+- Other encryption methods
+
+Any string can be used as a password. There is no limit on the password length, but shorter passwords are more susceptible to cracking. It is recommended to use a password of 16 characters or longer.
 
 > `level`: number
 
-用户等级，连接会使用这个用户等级对应的 [本地策略](../policy.md#levelpolicyobject)。
+User level. Connections will use the corresponding [local policy](../policy.md#levelpolicyobject) associated with this user level.
 
-`level` 的值, 对应 [policy](../policy.md#policyobject) 中 `level` 的值。 如不指定, 默认为 0。
+The `level` value corresponds to the `level` value in the [policy](../policy.md#policyobject). If not specified, the default value is 0.

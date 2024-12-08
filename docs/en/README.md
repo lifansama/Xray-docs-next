@@ -2,100 +2,102 @@
 home: true
 heroImage: /LogoX2.png
 heroText: Project X
-tagline: 不畏浮云遮望眼 · 金睛如炬耀苍穹
+tagline: Fear not the clouds that obscure the view, golden eyes like a torch brighten the sky
 actions:
-  - text: 由此开始 →
-    link: /document/
+  - text: Start here →
+    link: /en/document/
     type: primary
-  - text: 配置指南 →
-    link: /config/
+  - text: Configuration guide →
+    link: /en/config/
     type: secondary
 features:
-  - title: 极速协议
-    details: 原创 VLESS 与 XTLS 协议，摆脱冗余加密，释放CPU算力
+  - title: High-speed protocol
+    details: Original VLESS and XTLS protocols, free from redundant encryption, release CPU power
 
-  - title: 自由组合
+  - title: Free combination
     details: |
-      完善的回落机制，有效防止主动探测，多服务共享端口
+      Perfect fallback mechanism, effectively prevent active detection, multi-service sharing ports
 
-  - title: 超低占用
+  - title: Ultra-low occupancy
     details: |
-      OpenWRT RaspberryPi 等各种精简设备皆可使用
+      OpenWRT RaspberryPi and other simplified devices can be used
 
-  - title: 强大路由
+  - title: Powerful routing
     details: |
-      高可定制化的路由系统，满足各类使用需求，充分发挥网络性能
+      Highly customizable routing system to meet various usage requirements and fully exploit network performance
 
-  - title: 完整兼容
+  - title: Full compatibility
     details: |
-      完整兼容 v2ray-core 配置文件与 API 调用
+      Fully compatible with v2ray-core configuration files and API calls
 
-  - title: 亲和力
+  - title: Affinity
     details: |
-      活跃的社区讨论及贡献，MPL 2.0 开源许可协议
+      Active community discussions and contributions, MPL 2.0 open source license
 
 footer: Licensed under CC-BY-SA 4.0 | Copyright 2020-Present Project X Community
 ---
 
-## XTLS ? Xray ? V2Ray ?
+## XTLS? Xray? V2Ray?
 
 **XTLS are brilliant ideas for TLS we study, while Xray is the best practice we maintain.**
 
-- Xray-core 是 v2ray-core 的超集，含更好的整体性能和 XTLS 等一系列增强，且完全兼容 v2ray-core 的功能及配置。
-  - 只有一个可执行文件，含 ctl 的功能，run 为默认指令
-  - 配置上完全兼容，环境变量和 API 对应要改为以 XRAY\_ 开头
-  - 全平台开放了裸协议的 ReadV
-  - 提供完整的 VLESS & Trojan XTLS 支持，均有 ReadV
-  - 提供了 XTLS 多种流控模式, 性能一骑绝尘!
+- Xray-core is a superset of v2ray-core, with better overall performance and enhancements such as XTLS, and it's~~completely~~compatible with v2ray-core functionality and configuration.
+  - Only one executable file, including ctl functionality, run is the default command
+  - Configuration is~~completely~~compatible, environment variables and API calls need to be changed to start with XRAY\_
+  - Exposed raw protocol's ReadV on all platforms
+  - Provides complete VLESS & Trojan XTLS support, both with ReadV
+  - Provides multiple XTLS flow control modes, unrivaled performance!
 
-> “配置兼容，整体更好”
+> "Configuration compatible, overall better"
 
-- Xray-flutter 是一个优雅的跨平台图形界面工具. <Badge text="WIP" type="warning"/>
+### Who are we?
 
-### 我们是谁？
+> **It doesn't matter who we are. What matters is that we will keep riding and never look back.**
 
-> **It doesn't matter who we are. What matters is that we will keep riding and not look back.**
+### Help Xray become stronger
 
-### 帮助 Xray 变得更强
+Welcome to help Xray become stronger!
 
-欢迎帮助 Xray 变得更强！
-
-- 🖥️ 帮助开发和测试 Xray, 提交高质量的 Pull request.
-- 📩 在 [GitHub Issues](https://github.com/XTLS/Xray-core/issues) 或 [讨论区](https://github.com/XTLS/Xray-core/discussions)发起建设性或有意义的 issue 与 discussion.
-- 📝 写下您的使用心得并提交至 Xray 的 [文档网站](https://github.com/XTLS/XTLS.github.io).
-- 💬 在 Telegram 群帮助群友/灌水.
-- **...事实上,每一份对 Xray 的支持都会让 Xray 变得更强大**
+- 🖥️ Help develop and test Xray, submit high-quality Pull requests.
+- 📩 Initiate constructive or meaningful issues and discussions in [GitHub Issues](https://github.com/XTLS/Xray-core/issues) or [Discussion area](https://github.com/XTLS/Xray-core/discussions).
+- 📝 Write down your usage experience and submit it to Xray's [documentation website](https://github.com/XTLS/Xray-docs-next).
+- 💬 Help group members/chat in Telegram group.
+- **...In fact, every support for Xray will make Xray stronger**
 
 ### Telegram
 
-- [Project X 交流群](https://t.me/projectXray)
+- [Project X Discussion Group](https://t.me/projectXray)
 
-  - 交流群可在底线之上随便水，不要撕逼，没有滥权。
-  - 有问题尽管随便问，知道的尽量回答。
-  - 禁政治，禁 NSFW
+  - You can chat freely above the bottom line in the discussion group, don't fight, no abuse of power.
+  - Feel free to ask questions, and try to answer those you know.
+  - No politics, No NSFW
 
-- [Project X 频道](https://t.me/projectXtls)
-  - 发布 Project X 的最新资讯
+- [Project VLESS Group](https://t.me/projectVless)
 
-### 致谢
+  - The official Xray-core group for non-Chinese participants. Sister group of [Project X](https://t.me/projectXray)
+  - No advertising, No insults, No politics.
 
-- 感谢所有人的支持！
-- 感谢各类脚本、Docker 镜像、客户端支持...感谢所有帮忙完善生态的大佬们！
-- 感谢为 Xray 网站和文档添砖加瓦的朋友们.
-- 感谢提出有意义的建议和意见的朋友们.
-- 感谢 Telegram 群每一位帮助群友的朋友.
+- [Project X Channel](https://t.me/projectXtls)
 
-### 更多关于 project X
+  - Publish the latest news of Project X
 
-- 如果你想知道更多关于 project X 的理念与密闻, 请点击[这里](./faq/about/)
-- 如果你想知道更多关于 project X 的足迹与成长, 请点击[这里](./about/news.md)
+### Thanks
+
+- Thanks to everyone for their support!
+- Thanks to all kinds of scripts, Docker images, client support... Thanks to all the big guys who helped improve the ecosystem!
+- Thanks to friends who have contributed to the Xray website and documentation.
+- Thanks to friends who have made meaningful suggestions and comments.
+- Thanks to every friend in the Telegram group who helps others.
+
+### More about project X
+
+- If you would like to learn more about project X's history and growth, please click [here](./about/news.md)
+- Now Project X releases NFTs! If you would like to have one Project X NFT, or want to donate to or sponsoring Project X, please click [here](https://github.com/XTLS/Xray-core/discussions/3633#discussioncomment-10240940)
 
 ### License
 
 [Mozilla Public License Version 2.0](https://github.com/XTLS/Xray-core/blob/main/LICENSE)
 
 ### Stargazers over time
-
-> Project X 的 GitHub 主仓库 Xray-core 已获 2000 stars；Project X 群人数近 3000，频道订阅数 1000+
 
 [![Stargazers over time](https://starchart.cc/XTLS/Xray-core.svg)](https://starchart.cc/XTLS/Xray-core)

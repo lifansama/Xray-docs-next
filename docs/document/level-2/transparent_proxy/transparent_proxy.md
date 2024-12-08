@@ -91,7 +91,9 @@ Linux 使用`Netfilter`来管理网络，`Netfilter`模型如下：
 4. 能够手写客户端 json 文件配置，至少要能看懂
 
 ### 前期准备工作
-
+::: warning
+在开始操作前，记得使用 `sysctl -w net.ipv4.ip_forward=1` 打开linux ipv4封包转发
+:::
 **1. 准备一个运行 Linux 系统的网关**
 
 比如，刷了 OpenWRT 的路由器
@@ -131,6 +133,10 @@ Linux 使用`Netfilter`来管理网络，`Netfilter`模型如下：
 我们由易到难，不写 routing，只写一个 inbound 一个 outbound。
 
 ### 首先，我们先试试做到第一阶段
+
+::: warning
+如果你不能接受你的机器需要重启，最好先开一个虚拟机进行练习
+:::
 
 将所有`PREROUTING链`的流量，都转发到 Xray 中。
 
@@ -197,7 +203,16 @@ iptables -t mangle -A PREROUTING -j XRAY
 
 我们平时用的 DNS 一般来自路由器，但这个 iptables 规则只代理了局域网中的设备，却没有代理网关本机，这样返回的 DNS 查询结果可能是错误的或者污染的。
 
-iptables-tproxy 不支持对`OUTPUT链`操作，但是`Netfilter`有个特性，在`OUTPUT链`给包打标记为`1`后相应的包会重路由到`PREROUTING链`上。所以我们就给网关本机需要代理的请求在`OUTPUT链`上标记`1`即可。
+iptables-tproxy 不支持对`OUTPUT链`操作，但是我们可以通过配置`策略路由`，把`OUTPUT链`中相应的包重新路由到`PREROUTING链`上。
+
+```bash
+# 添加策略路由: 标记为1的包，走路由表100
+ip rule add fwmark 1 table 100
+# 添加路由条目到路由表100: 所有包路由到本地
+ip route add local 0.0.0.0/0 dev lo table 100
+```
+
+通过配置上述`策略路由`，我们只需要在`OUTPUT链`中给包打标记为`1`，相应的包就会路由到网关本机，即`PREROUTING链`上。所以我们就给网关本机需要代理的请求在`OUTPUT链`上标记`1`即可。
 
 如果要代理网关本机发出的的全部请求，就会引入一个问题，Xray 运行在网关，Xray 向代理服务端发送请求，这个请求又被代理了，就形成了回环。
 
@@ -267,8 +282,6 @@ iptables -t mangle -A OUTPUT -p udp -j XRAY_MASK
 
 3. **[too many open files 问题](https://guide.v2fly.org/app/tproxy.html#解决-too-many-open-files-问题)** ，解决方法见 **[[透明代理]通过 gid 规避 Xray 流量-配置最大文件大开数&运行 Xray 客户端](../iptables_gid#3-配置最大文件大开数运行xray客户端)**
 
-4. 关于开启 ip_forward，待补充...
+4. 避免已有连接的包二次通过 TPROXY ,待补充...
 
-5. 避免已有连接的包二次通过 TPROXY ,待补充...
-
-6. 主路由、单臂路由与旁路由，待补充...
+5. 主路由、单臂路由与旁路由，待补充...

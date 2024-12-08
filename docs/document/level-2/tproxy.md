@@ -4,7 +4,7 @@ title: TProxy 透明代理
 
 # 透明代理（TProxy）配置教程
 
-本配置基于[TProxy 透明代理的新 V2Ray 白话文教程](https://guide.v2fly.org/app/tproxy.html)，加入了 Xray 的新特性，使用 VLESS + XTLS Splice 方案，并将旧教程中默认出站代理的分流方式改为默认出站直连，使用者请按照实际情况进行修改。
+本配置基于[TProxy 透明代理的新 V2Ray 白话文教程](https://guide.v2fly.org/app/tproxy.html)，加入了 Xray 的新特性，使用 VLESS + XTLS Vision 方案，并将旧教程中默认出站代理的分流方式改为默认出站直连，使用者请按照实际情况进行修改。
 
 本文中所有配置已在 Raspberry Pi 2B、Ubuntu 20.04 环境下测试成功，如在其它环境中使用请自行调整配置。
 
@@ -76,7 +76,7 @@ sudo curl -oL /usr/local/share/xray/geosite.dat https://github.com/Loyalsoldier/
             "users": [
               {
                 "id": "UUID",
-                "flow": "xtls-rprx-splice",
+                "flow": "xtls-rprx-vision",
                 "encryption": "none"
               }
             ]
@@ -189,10 +189,6 @@ sudo ip rule add fwmark 1 table 100 # 为路由表 100 设定规则
 nftables 配置与 iptables 配置二选一，不可同时使用。
 :::
 
-<Tabs title="netfilter">
-
-<Tab title="nftables1">
-
 ```nftables
 #!/usr/sbin/nft -f
 
@@ -236,10 +232,6 @@ table ip xray {
 将上述配置写入一个文件（如 `nft.conf`），之后将该文件赋予可执行权限，最后使用 root 权限执行该文件即可（`# ./nft.conf`）。
 :::
 
-</Tab>
-
-<Tab title="iptables1">
-
 ```bash
 iptables -t mangle -N XRAY
 iptables -t mangle -A XRAY -d 10.0.0.0/8 -j RETURN
@@ -275,19 +267,9 @@ iptables -t mangle -A XRAY_SELF -p udp -j MARK --set-mark 1
 iptables -t mangle -A OUTPUT -j XRAY_SELF
 ```
 
-</Tab>
-
-</Tabs>
-
 配置完成后，将局域网内其它设备的默认网关改为该设备 IP，就可以直接翻墙了。在其它主机和本机皆测试成功后，可进行下一步配置。
 
 ## 配置永久化与开机自启
-
-<br/>
-
-<Tabs title="netfilter2">
-
-<Tab title="nftables2">
 
 首先将已经编辑好的 nftables 配置文件移动到 `/etc` 目录下，并重命名为 `nftables.conf`。然后编辑 `/lib/systemd/system/nftables.service`。
 
@@ -316,10 +298,6 @@ WantedBy=sysinit.target
 
 最后 enable 即可。
 
-</Tab>
-
-<Tab title="iptables2">
-
 关于 iptables 的永久化，建议直接安装 `iptables-persistent`。
 
 安装过程中会提示你选择“是否保存配置”，如果已经将 iptables 配置写入系统，那么此时选择“是”即可；如果尚未写入也没有关系，安装完毕后将配置写入，然后执行 `netfilter-persistent save` 即可（需要 root 权限）。
@@ -340,12 +318,8 @@ Documentation=man:netfilter-persistent(8)
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/sbin/netfilter-persistent start ; /usr/sbin/ip route add local default dev lo table 100 ; /usr/sbin/ip rule add fwmark 1 table 100
-ExecStop=/usr/sbin/netfilter-persistent stop ; /usr/sbin/ip route del local default dev lo table 100 ; /usr/sbin/ip rule del table 100
+ExecStop=/usr/sbin/netfilter-persistent stop ; /usr/sbin/ip route flush dev lo table 100 ; /usr/sbin/ip rule del table 100
 
 [Install]
 WantedBy=multi-user.target
 ```
-
-</Tab>
-
-</Tabs>

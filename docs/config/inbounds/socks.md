@@ -1,6 +1,6 @@
 # Socks
 
-标准 Socks 协议实现，兼容 [Socks 4](http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4.protocol)、Socks 4a 和 [Socks 5](http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4.protocol)。
+标准 Socks 协议实现，兼容 [Socks 4](http://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4.protocol)、[Socks 4a](https://ftp.icm.edu.pl/packages/socks/socks4/SOCKS4A.protocol) Socks 5, 以及 **HTTP**。
 
 ::: danger
 **Socks 协议没有对传输加密，不适宜经公网中传输**
@@ -29,6 +29,8 @@
 
 Socks 协议的认证方式，支持 `"noauth"` 匿名方式和 `"password"` 用户密码方式。
 
+当使用 password 时，发往入站的HTTP请求也会要求同样的账号密码。
+
 默认值为 `"noauth"`。
 
 > `accounts`: \[ [AccountObject](#accountobject) \]
@@ -49,7 +51,9 @@ Socks 协议的认证方式，支持 `"noauth"` 匿名方式和 `"password"` 用
 
 当开启 UDP 时，Xray 需要知道本机的 IP 地址。
 
-默认值为 `"127.0.0.1"`。
+“本机的 IP 地址” 含义是客户端发起UDP连接时可以拿着这个 IP 找到服务端，默认是服务器被TCP连接时的本地 IP. 大多数时候应该可以正常工作，但是在经过一些经过 NAT 的系统时可能导致工作异常需要修改这个参数为正确的公网IP.
+
+警告，如果你的机器上存在多个IP地址，将会受到 [入站监听](../inbound.md#inboundobject) 里UDP监听 0.0.0.0 时有关的影响。
 
 > `userLevel`: number
 

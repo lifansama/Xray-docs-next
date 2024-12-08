@@ -1,35 +1,56 @@
-import { defineUserConfig } from "@vuepress/cli";
-import type { DefaultThemeOptions } from "@vuepress/theme-default";
-import * as sidebar from "./config/sidebar";
-import * as navbar from "./config/navbar";
-import * as path from "path";
+import { viteBundler } from "@vuepress/bundler-vite";
+import { webpackBundler } from "@vuepress/bundler-webpack";
+// import { UserConfig, defineUserConfig } from "@vuepress/cli";
+import { UserConfig, defineUserConfig } from "vuepress/cli";
+import { searchPlugin } from "@vuepress/plugin-search";
+import markdownItFootnote from "markdown-it-footnote";
+import theme from './theme.js'
+import { registerComponentsPlugin } from '@vuepress/plugin-register-components'
+import process from 'node:process'
+// import { getDirname, path } from '@vuepress/utils'
+import { getDirname, path } from 'vuepress/utils'
+import { MermaidPlugin } from './plugins/mermaid/node/mermaid'
+import i18nPlugin from "vuepress-plugin-i18n";
 
+const __dirname = getDirname(import.meta.url)
+console.log('>>> __dirname -> ', __dirname)
 const isProduction = process.env.NODE_ENV === "production";
-const forMainRepo = process.env.XRAY_DOCS_MAIN_REPO === "true";
 const useVite = process.env.XRAY_DOCS_USE_VITE === "true";
 
-console.log("base:", forMainRepo ? "/" : "/Xray-docs-next/");
 console.log(
   "bundler:",
   isProduction && !useVite ? "@vuepress/webpack" : "@vuepress/vite"
 );
 
-export default defineUserConfig<DefaultThemeOptions>({
-  theme: path.join(__dirname, "./theme"),
+export default defineUserConfig(<UserConfig>{
   plugins: [
-    [
-      "@vuepress/plugin-search",
-      {
-        locales: {
-          "/": {
-            placeholder: "搜索",
+    i18nPlugin({
+      updatedTime: "git",
+      translationGuide: "https://github.com/XTLS/Xray-docs-next",
+      locales: {
+        en: {
+          lang: "en-US",
+          untranslated: {
+            title: "Untranslated"
           },
+          outdated: {
+            title: "Outdated"
+          }
+        }
+      }
+    }),
+    searchPlugin({
+      locales: {
+        "/": {
+          placeholder: "搜索",
         },
       },
-    ],
-    ["@vuepress/plugin-debug", !isProduction],
+    }),
+    registerComponentsPlugin({
+      componentsDir: path.resolve(__dirname, './theme/components'),
+    }),
   ],
-  base: forMainRepo ? "/" : "/Xray-docs-next/",
+  base: "/",
   locales: {
     "/": {
       lang: "zh-CN",
@@ -41,98 +62,13 @@ export default defineUserConfig<DefaultThemeOptions>({
       title: "Project X",
       description: "Official document of Xray",
     },
-  },
-  themeConfig: {
-    smoothScroll: true,
-    repo: "xtls/xray-core",
-    docsRepo: "xtls/Xray-docs-next",
-    docsDir: "docs",
-    docsBranch: "main",
-    editLinks: true,
-    enableToggle: true,
-
-    themePlugins: {
-      git: isProduction,
-    },
-    locales: {
-      "/": {
-        repoLabel: "查看源码",
-        editLinkText: "帮助我们改善此页面！",
-        tip: "提示",
-        warning: "注意",
-        danger: "警告",
-        lastUpdatedText: "最近更改",
-        selectLanguageName: "简体中文",
-        selectLanguageText: "多语言",
-        selectLanguageAriaLabel: "多语言",
-        sidebar: {
-          "/config/": sidebar.getConfigSidebar(
-            "特性详解",
-            "基础配置",
-            "入站代理",
-            "出站代理",
-            "底层传输",
-            "/config/"
-          ),
-          "/document/": sidebar.getDocumentSidebar(
-            "快速入门文档",
-            "/document/"
-          ),
-          "/document/level-0/": sidebar.getDocumentLv0Sidebar(
-            "小小白白话文",
-            "/document/level-0/"
-          ),
-          "/document/level-1/": sidebar.getDocumentLv1Sidebar(
-            "入门技巧",
-            "/document/level-1/"
-          ),
-          "/document/level-2/": sidebar.getDocumentLv2Sidebar(
-            "进阶技巧",
-            "/document/level-2/"
-          ),
-          "/development/": sidebar.getDevelopmentSidebar(
-            "开发指南",
-            "协议详解",
-            "/development/"
-          ),
-        },
-        navbar: navbar.hans,
-      },
-      "/en/": {
-        repoLabel: "Source",
-        selectLanguageName: "English (WIP)",
-        // TODO: translation
-        sidebar: {
-          "/en/config/": sidebar.getConfigSidebar(
-            "特性详解",
-            "基础配置",
-            "入站代理",
-            "出站代理",
-            "底层传输",
-            "/en/config/"
-          ),
-          "/en/document/level-0/": sidebar.getDocumentLv0Sidebar(
-            "小小白白话文",
-            "/en/document/level-0/"
-          ),
-          "/en/document/level-1/": sidebar.getDocumentLv1Sidebar(
-            "入门技巧",
-            "/en/document/level-1/"
-          ),
-          "/en/document/level-2/": sidebar.getDocumentLv2Sidebar(
-            "进阶技巧",
-            "/en/document/level-2/"
-          ),
-          "/en/development/": sidebar.getDevelopmentSidebar(
-            "开发指南",
-            "协议详解",
-            "/en/development/"
-          ),
-        },
-        navbar: navbar.en,
-      },
+    "/ru/": {
+      lang: "ru-RU",
+      title: "Project X",
+      description: "Официальная документация Xray",
     },
   },
+  theme,
   head: [["link", { rel: "icon", href: `/logo.png` }]],
   markdown: {
     toc: {
@@ -140,7 +76,9 @@ export default defineUserConfig<DefaultThemeOptions>({
     },
   },
   extendsMarkdown: (md) => {
-    md.use(require("markdown-it-footnote"));
+    md.use(markdownItFootnote);
+    md.use(MermaidPlugin);
   },
-  bundler: isProduction && !useVite ? "@vuepress/webpack" : "@vuepress/vite",
+  bundler:
+    process.env.DOCS_BUNDLER === "webpack" ? webpackBundler() : viteBundler(),
 });

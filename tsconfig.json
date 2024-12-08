@@ -1,9 +1,19 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "esnext",
-    "sourceMap": true
+    "module": "ESNext",
+    "target": "ES2022",
+    "lib": [
+      "DOM",
+      "ES2022"
+    ],
+    "sourceMap": false,
+    "strict": true,
+    "moduleResolution": "Bundler",
   },
+  "include": [
+    "./docs/.vuepress/**/*.ts",
+    "./docs/.vuepress/**/*.vue"
+  ],
   "exclude": [
     "node_modules"
   ]

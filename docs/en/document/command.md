@@ -1,12 +1,12 @@
-# 命令参数
+# Command Parameters
 
 ::: tip
-Xray 使用 Go 风格的命令及参数
+Xray uses Go-style commands and parameters
 :::
 
-## 获取基本命令
+## Get Basic Commands
 
-您可以运行 `xray help` 来获得所有 xray 最基础的用法, 以及可用的命令及说明.
+You can run `xray help`to get the most basic usage of all xray, as well as available commands and instructions.
 
 ```
 Xray is a platform for building proxies.
@@ -21,16 +21,18 @@ The commands are:
         version      Show current version of Xray
         api          Call an API in an Xray process
         tls          TLS tools
-        uuid         Generate new UUIDs
+        uuid         Generate UUIDv4 or UUIDv5
+        x25519       Generate key pair for x25519 key exchange
+        wg           Generate key pair for wireguard key exchange
 
 Use "xray help <command>" for more information about a command.
-```
 
+```
 ### xray run
 
-指定一个或多个配置文件，并运行。
+Specify one or more configuration files and run.
 
-使用方法:
+Usage:
 
 ```
  xray run [-c config.json] [-confdir dir]
@@ -49,13 +51,18 @@ Default "json".
 
 The -test flag tells Xray to test config files only,
 without launching the server
+
+The -dump flag tells Xray to print the merged config.
 ```
+::: tip
+Except from the default JSON format, config can also use TOML and YAML. It will automatically recognized from file extensions when the `-format` flag is not set.
+:::
 
 ### xray version
 
-输出 Xray 版本、 Golang 版本等信息。
+Output Xray version, Golang version and other information.
 
-使用方法:
+Usage:
 
 ```
  xray version
@@ -63,9 +70,9 @@ without launching the server
 
 ### xray api
 
-调用 Xray 的 gRPC API，需要在配置文件中开启。
+To call Xray's gRPC API, it needs to be enabled in the configuration file.
 
-使用方法:
+Usage:
 
 ```
 xray api <command> [arguments]
@@ -82,34 +89,106 @@ xray api <command> [arguments]
         rmo           Remove outbounds
 ```
 
+### xray convert
+
+Convert config to protobuf, or convert typedMessage to JSON
+
+usage:
+
+```
+xray convert <command> [arguments]
+
+The commands are:
+
+        pb           Convert multiple json configs to protobuf
+        json         Convert typedMessage to json
+```
+
+Sub-command `pb`
+```bash
+# Usage: xray convert pb [-debug] [-type] [json file] [json file] ...
+
+# mix three config files to mix.pb
+xray convert pb c1.json c2.json c3.json > mix.pb
+
+# Use -debug option to view the content of mix.pb
+xray convert pb -debug mix.pb
+
+# Start Xray-core with mix.pb
+xray -c mix.pb
+
+# Detailed usage
+xray help convert pb
+```
+
+Sub-command JSON
+```bash
+# Usage: xray convert json [-type] [stdin:] [typedMessage file]
+
+tmsg='{
+  "type": "xray.proxy.shadowsocks.Account",
+  "value": "CgMxMTEQBg=="
+}'
+
+echo ${tmsg} | xray convert json stdin:
+
+# Outputs from above:
+'{
+  "cipherType": "AES_256_GCM",
+  "password": "111"
+}'
+
+# Detailed usage
+xray help convert json
+```
+
 ### xray tls
 
-一些与 TLS 相关的工具。
+Some tools related to TLS.
 
-使用方法:
+Usage:
 
 ```
 xray tls <command> [arguments]
 ```
 
 ```
-        cert         Generate TLS certificates
-        ping         Ping the domain with TLS handshake
+        cert          Generate TLS certificates
+        ping          Ping the domain with TLS handshake
+        certChainHash Calculate TLS certificates hash.
 ```
 
 ### xray uuid
 
-生成 UUID。
+Generate UUID.
 
-使用方法:
+Usage:
 
 ```
 xray uuid
 ```
 
-::: tip
-当`-config`没有指定时，Xray 将先后尝试从以下路径加载`config.json`:
+### xray x25519
+Generate x25519 key pair。
 
-- 工作目录（Working Directory）
-- [环境变量](../config/features/env.md#资源文件路径)中`Xray.location.asset`所指定的路径
+Usage:
+
+```
+xray x25519 [-i "(base64.RawURLEncoding)" --std-encoding]
+```
+
+### xray wg
+Generate wireguard curve25519 key pair。
+
+Usage:
+
+```
+xray wg [-i "(base64.StdEncoding)"]
+```
+
+::: tip
+When `-config` is not specified, Xray will try to load `config.json` from the following paths:
+
+- Working Directory
+- The path specified by `Xray.location.asset` in the [environment variable](../config/features/env.md).
   :::

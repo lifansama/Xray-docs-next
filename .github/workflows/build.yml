@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches: [main]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,10 +16,14 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: "18"
+      - name: Install yarn and pnpm
+        run: |
+          npm install yarn@1.22.19 -g
+          npm install -g pnpm
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
       - uses: actions/cache@v2
         id: yarn-cache
         with:
@@ -24,23 +31,15 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Install and Build
-        env:
-          XRAY_DOCS_USE_VITE: "true"
-        run: |
-          yarn install
-          yarn docs:build
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/.vuepress/dist
+      - name: Install
+        run: pnpm install
       - name: Build for Main Repository
         env:
-          XRAY_DOCS_MAIN_REPO: "true"
+          NODE_OPTIONS: "--max_old_space_size=4096 --openssl-legacy-provider"
         run: |
           yarn docs:build
       - name: Deploy to main Repository
+        if: github.event_name != 'pull_request'
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.ACTION_PERSONAL_TOKEN }}

@@ -32,11 +32,17 @@ Shadowsocks 2022 新协议格式提升了性能并带有完整的重放保护，
 ```json
 {
   "settings": {
-    "password": "密码",
+    "network": "tcp,udp",
     "method": "aes-256-gcm",
+    "password": "114514",
     "level": 0,
     "email": "love@xray.com",
-    "network": "tcp,udp"
+    "clients": [
+      {
+        "password": "1919810",
+        "method": "aes-128-gcm"
+      }
+    ]
   }
 }
 ```
@@ -45,20 +51,9 @@ Shadowsocks 2022 新协议格式提升了性能并带有完整的重放保护，
 
 可接收的网络协议类型。比如当指定为 `"tcp"` 时，仅会接收 TCP 流量。默认值为 `"tcp"`。
 
-## ClientObject
-
-```json
-{
-  "password": "密码",
-  "method": "aes-256-gcm",
-  "level": 0,
-  "email": "love@xray.com"
-}
-```
-
 > `method`: string
 
-必填。
+加密方式，可选项见上。
 
 > `password`: string
 
@@ -70,11 +65,11 @@ Shadowsocks 2022 新协议格式提升了性能并带有完整的重放保护，
 
 使用 `openssl rand -base64 <长度>` 以生成与 shadowsocks-rust 兼容的密钥，长度取决于所使用的加密方法。
 
-| 加密方法                          | 密钥长度 |
-|-------------------------------|-----:|
-| 2022-blake3-aes-128-gcm       |   16 |
-| 2022-blake3-aes-256-gcm       |   32 |
-| 2022-blake3-chacha20-poly1305 |   32 |
+| 加密方法                      | 密钥长度 |
+| ----------------------------- | -------: |
+| 2022-blake3-aes-128-gcm       |       16 |
+| 2022-blake3-aes-256-gcm       |       32 |
+| 2022-blake3-chacha20-poly1305 |       32 |
 
 在 Go 实现中，32 位密钥始终工作。
 
@@ -85,9 +80,29 @@ Shadowsocks 2022 新协议格式提升了性能并带有完整的重放保护，
 > `level`: number
 
 用户等级，连接会使用这个用户等级对应的 [本地策略](../policy.md#levelpolicyobject)。
-
 `level` 的值, 对应 [policy](../policy.md#levelpolicyobject) 中 `level` 的值。 如不指定, 默认为 0。
 
 > `email`: string
 
 用户邮箱，用于区分不同用户的流量（日志、统计）。
+
+## ClientObject
+
+```json
+{
+  "password": "1919810",
+  "method": "aes-256-gcm",
+  "level": 0,
+  "email": "love@xray.com"
+}
+```
+
+当存在此选项时，代表启用多用户模式.
+
+当 InboundConfigurationObject 中的 `method` 不为SS2022选项时，可以在此为每个用户指定 `"method"`。(`"method"`中也仅支持非SS2022选项)与`"password"`(与此同时 InboundConfigurationObject 中的设置的 `"password"` 将会被忽略)。
+
+当 InboundConfigurationObject 中的 `method` 为SS2022选项时，出于安全考量，不再支持为单个用户设置 `"method"`，统一为 InboundConfigurationObject 所指定的`"method"`。
+
+注意SS2022并不会像旧SS一样忽略上层 `"password"`, 客户端的正确密码写法应为, `ServerPassword:UserPassword`。如:`"password": "114514:1919810"`
+
+其余选项与 InboundConfigurationObject 中的含义一致。

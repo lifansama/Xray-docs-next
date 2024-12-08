@@ -1,13 +1,12 @@
-# VLESS
+# VLESS（XTLS Vision Seed）
 
 ::: danger
 目前 VLESS 没有自带加密，请用于可靠信道，如 TLS。
-目前 VLESS 不支持分享。
 :::
 
 VLESS 是一个无状态的轻量传输协议，它分为入站和出站两部分，可以作为 Xray 客户端和服务器之间的桥梁。
 
-与 [VMess](./vmess.md) 不同，VLESS 不依赖于系统时间，认证方式同样为 UUID，但不需要 alterId。
+与 [VMess](./vmess.md) 不同，VLESS 不依赖于系统时间，认证方式同样为 UUID。
 
 ## OutboundConfigurationObject
 
@@ -21,7 +20,7 @@ VLESS 是一个无状态的轻量传输协议，它分为入站和出站两部�
         {
           "id": "5783a3e7-e373-51cd-8642-c83782b807c5",
           "encryption": "none",
-          "flow": "xtls-rprx-direct",
+          "flow": "xtls-rprx-vision",
           "level": 0
         }
       ]
@@ -44,7 +43,7 @@ VLESS 是一个无状态的轻量传输协议，它分为入站和出站两部�
     {
       "id": "5783a3e7-e373-51cd-8642-c83782b807c5",
       "encryption": "none",
-      "flow": "xtls-rprx-direct",
+      "flow": "xtls-rprx-vision",
       "level": 0
     }
   ]
@@ -69,7 +68,7 @@ VLESS 是一个无状态的轻量传输协议，它分为入站和出站两部�
 {
   "id": "5783a3e7-e373-51cd-8642-c83782b807c5",
   "encryption": "none",
-  "flow": "xtls-rprx-direct",
+  "flow": "xtls-rprx-vision",
   "level": 0
 }
 ```
@@ -100,40 +99,33 @@ VLESS 的用户 ID，可以是任意小于 30 字节的字符串, 也可以是�
 
 目前出站协议中有以下流控模式可选：
 
-- `xtls-rprx-origin`：最初的流控模式。该模式纪念价值大于实际使用价值
-- `xtls-rprx-origin-udp443`：同 `xtls-rprx-origin`, 但放行了目标为 443 端口的 UDP 流量
-- `xtls-rprx-direct`：所有平台皆可使用的典型流控模式
-- `xtls-rprx-direct-udp443`：同 `xtls-rprx-direct`, 但是放行了目标为 443 端口的 UDP 流量
-- `xtls-rprx-splice`：Linux 平台下最建议使用的流控模式
-- `xtls-rprx-splice-udp443`：同 `xtls-rprx-splice`, 但是放行了目标为 443 端口的 UDP 流量
+- 无 `flow` 或者 空字符： 使用普通 TLS 代理
+- `xtls-rprx-vision`：使用新 XTLS 模式 包含内层握手随机填充 支持 uTLS 模拟客户端指纹
+- `xtls-rprx-vision-udp443`：同 `xtls-rprx-vision`, 但是不会拦截目标为 443 端口的 UDP 流量
 
-::: warning 注意
-当 `flow` 被指定时，还需要将该出站协议的 `streamSettings.security` 一项指定为 `xtls`，`tlsSettings` 改为 `xtlsSettings`。详情请参考 [streamSettings](../transport.md#streamsettingsobject)。
-
-此外，目前 XTLS 仅支持 TCP、mKCP、DomainSocket 这三种传输方式。
-:::
+此外，目前 XTLS 仅支持 TCP+TLS/Reality。
 
 <!-- prettier-ignore -->
 ::: tip 关于 xtls-rprx-*-udp443 流控模式
 
-启用了 Xray-core 的 XTLS 时，通往 UDP 443 端口的流量默认会被拦截（一般情况下为 QUIC），这样应用就不会使用 QUIC 而会使用 TLS，XTLS 才会真正生效。实际上，QUIC 本身也不适合被代理，因为 QUIC 自带了 TCP 的功能，它作为 UDP 流量在通过 VLESS 协议传输时，底层协议为 TCP，就相当于两层 TCP 了。
+启用了 Xray-core 的 XTLS 时，通往 UDP 443 端口的流量默认会被拦截（一般情况下为 QUIC），这样应用就不会使用 QUIC 而会使用 TLS，XTLS 才会真正生效。实际上，QUIC 本身也不适合被代理，因为 QUIC 自带了 TCP 的功能，它作为 UDP 流量在通过 VLESS 协议传输时，底层协议为 TCP，就相当于两层阻塞控制了。
 
 若不需要拦截，请在客户端填写 `xtls-rprx-*-udp443`，服务端不变。
 :::
 
 ::: tip 关于 Splice 模式
 Splice 是 Linux Kernel 提供的函数，系统内核直接转发 TCP，不再经过 Xray 的内存，大大减少了数据拷贝、CPU 上下文切换的次数。
-:::
 
 Splice 模式的的使用限制：
 
 - Linux 环境
 - 入站协议为 `Dokodemo door`、`Socks`、`HTTP` 等纯净的 TCP 连接, 或其它使用了 XTLS 的入站协议
-- 出站协议为 VLESS + XTLS 或 Trojan + XTLS
+- 出站协议为 VLESS + XTLS
 
 此外，使用 Splice 时网速显示会滞后，这是特性，不是 bug。
 
-需要注意的是，使用 mKCP 协议时不会使用 Splice（是的，虽然没有报错，但实际上根本没用到）。
+使用 Vision 模式 如果满足上述条件 会自动启用 Splice
+:::
 
 > `level`: number
 

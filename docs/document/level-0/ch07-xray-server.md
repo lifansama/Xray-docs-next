@@ -227,7 +227,7 @@
       },
       // 3*分流设置
       "routing": {
-        "domainStrategy": "AsIs",
+        "domainStrategy": "IPIfNonMatch",
         "rules": [
           // 3.1 防止服务器本地流转问题：如内网被攻击或滥用、错误的本地回环等
           {
@@ -237,7 +237,13 @@
             ],
             "outboundTag": "block" // 分流策略：交给出站"block"处理（黑洞屏蔽）
           },
-          // 3.2 屏蔽广告
+          {
+            // 3.2 防止服务器直连国内
+            "type": "field",
+            "ip": ["geoip:cn"],
+            "outboundTag": "block"
+          },
+          // 3.3 屏蔽广告
           {
             "type": "field",
             "domain": [
@@ -257,7 +263,7 @@
             "clients": [
               {
                 "id": "", // 填写你的 UUID
-                "flow": "xtls-rprx-direct",
+                "flow": "xtls-rprx-vision",
                 "level": 0,
                 "email": "vpsadmin@yourdomain.com"
               }
@@ -271,11 +277,9 @@
           },
           "streamSettings": {
             "network": "tcp",
-            "security": "xtls",
-            "xtlsSettings": {
-              "allowInsecure": false, // 正常使用应确保关闭
-              "minVersion": "1.2", // TLS 最低版本设置
-              "alpn": ["http/1.1"],
+            "security": "tls",
+            "tlsSettings": {
+              "alpn": "http/1.1",
               "certificates": [
                 {
                   "certificateFile": "/home/vpsadmin/xray_cert/xray.crt",
@@ -330,7 +334,7 @@ sudo systemctl status xray
 
 ## 7.6 回顾 `systemd` 进行基本的服务管理
 
-到现在为止，我们已经使用过了`systemctl`相关的`start`, `status`, `reload` 等命令，这些都是基于`systmed`管理模块对 Linux
+到现在为止，我们已经使用过了`systemctl`相关的`start`, `status`, `reload` 等命令，这些都是基于`systemd`管理模块对 Linux
 系统中各种服务进行管理的通用命令。现在正好熟悉一下相关的其他几个命令。
 
 1. 若你需要暂时关闭 `Xray` 的服务，那就用`stop`命令
@@ -423,7 +427,7 @@ sudo nano /etc/apt/sources.list
 2.  然后把下面这一条加在最后，并保存退出。
 
 ```
-deb http://deb.debian.org/debian buster-backports main
+deb http://archive.debian.org/debian buster-backports main
 ```
 
 3.  刷新软件库并查询 Debian 官方的最新版内核并安装。请务必安装你的 VPS 对应的版本（本文以比较常见的【amd64】为例）。

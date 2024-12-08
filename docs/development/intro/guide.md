@@ -4,39 +4,35 @@
 
 ### 版本控制
 
-project X 的代码被托管在 github 上:
+Project X 的代码被托管在 github 上:
 
-- xray 核心 [xray-core](https://github.com/XTLS/Xray-core)
-- xray-flutter [xray-flutter](https://github.com/XTLS/Xray-flutter)
+- Xray 核心 [Xray-core](https://github.com/XTLS/Xray-core)
 - 安装脚本 [Xray-install](https://github.com/XTLS/Xray-install)
-- 数据文件 [Xray-rules-dat](https://github.com/XTLS/Xray-rules-dat)
 - 配置模板 [Xray-examples](https://github.com/XTLS/Xray-examples)
-- xray 文档 [XTLS.github.io](https://github.com/XTLS/XTLS.github.io)
+- Xray 文档 [Xray-docs-next](https://github.com/XTLS/Xray-docs-next)
 
-您可以使用 [Git](https://git-scm.com/) 来获取代码.
+您可以使用 [Git](https://git-scm.com/) 来获取代码。
 
 ### 分支（Branch）
 
-本项目的主干分支为 main, main 分支也是发布时所使用的代码分支, 因此需要确保 master 在任一时刻都是可编译可使用的。
-
-如果需要开发新的功能
-
-- 请新开分支进行开发, 在开发完成并且经过充分测试后, 合并回主干分支.
-- 新开分支如没有必要再存在时, 可以去除.
+- 本项目的主干分支为 main，
+- 本项目的发布主分支同为 main，
+- 需要确保 main 在任一时刻都是可编译，且可正常使用的。
+- 如果需要开发新的功能，请新建分支进行开发，在开发完成并且经过充分测试后，合并回主干分支。
+- 已经合并入主干且没有必要存在的分支，请删除。
 
 ### 发布（Release）
 
 <Badge text="WIP" type="warning"/>
 
 - 建立尝鲜版本和稳定版本两个发布通道
-  - 临时版本, 主要用于特定情况的测试(比如从分支 build 的), 于 TG 群内/issue 回复等渠道 发布特定版本
-  - 尝鲜版本可以为 daily build , 用于尝鲜和获得即时反馈和再改进.
-  - 稳定版本为定时更新(比如周更), 合并稳定的修改并发布.
+  - 尝鲜版本，可以为 daily build，主要用于特定情况的测试，尝鲜和获得即时反馈和再改进。
+  - 稳定版本，为定时更新(比如月更)，合并稳定的修改并发布。
 
 ### 引用其它项目
 
 - Golang
-  - 产品代码建议使用 Golang 标准库和 [golang.org/x/](https://pkg.go.dev/search?q=golang.org%2Fx) 下的库；
+  - 产品代码建议使用 Golang 标准库和 [golang.org/x/](https://pkg.go.dev/search?limit=25&m=package&q=golang.org%2Fx) 下的库；
   - 如需引用其它项目，请事先创建 issue 讨论；
 - 其它
   - 不违反双方的协议，且对项目有帮助的工具，都可以使用。
@@ -45,31 +41,32 @@ project X 的代码被托管在 github 上:
 
 ### 写代码之前
 
-发现任何问题，或对项目有任何想法，请创建 Issue 讨论以减少重复劳动和消耗在代码上的时间。
+发现任何问题，或对项目有任何想法，请创建 [issue](https://github.com/XTLS/Xray-core/issues) 讨论以减少重复劳动和消耗在代码上的时间。
 
 ### 修改代码
 
 - Golang
   - 请参考 [Effective Go](https://golang.org/doc/effective_go.html)；
-  - 每一次 push 之前，请运行：`go fmt ./...` 和 `go fmt -s -l -e -w $(find . -type f -name "*.go" ! -name "*.pb.go")`；
-  - 每一次 push 之前，请确保测试通过：`go test ./...`；
-  - 提交 pull request 之前，请确保新增代码有超过 70% 的代码覆盖率（code coverage）；
+  - 每一次 push 之前，请运行：`go generate core/format.go`；
+  - 如果需要修改 protobuf，例如增加新配置项，请运行：`go generate core/proto.go`；
+  - 提交 pull request 之前，建议测试通过：`go test ./...`；
+  - 提交 pull request 之前，建议新增代码有超过 70% 的代码覆盖率（code coverage）；
 - 其它
   - 请注意代码的可读性。
 
 ### Pull Request
 
-- 提交 PR 之前，请先运行 `git pull https://github.com/xray/xray-core.git` 以确保 merge 可顺利进行；
+- 提交 PR 之前，请先运行 `git pull https://github.com/XTLS/Xray-core.git` 以确保 merge 可顺利进行；
 - 一个 PR 只做一件事，如有对多个 bug 的修复，请对每一个 bug 提交一个 PR；
-- 由于 Golang 的特殊需求（Package path），Go 项目的 PR 流程和其它项目有所不同 ,建议流程如下：
-  1. 先 Fork 本项目，创建自己的 `github.com/your/Xray-core` 仓库；
-  2. 克隆自己的 Xray 仓库到本地：`git clone https://github.com/your/Xray-core.git`；
-  3. 基于 `main` 分支创建新的分支；
-  4. 在自行创建的分支上作修改并提交修改(commit)；
-  5. 在推送(push)修改完成的分支到自己的仓库前，先切换到 `main` 分支，运行 `git pull https://github.com/v2fly/Xray-core.git` 拉取最新的远端代码；
-  6. 如果上一步拉取得到了新的远端代码，则切换到之前自己创建的分支，运行 `git rebase master` 执行分支合并操作。如遇到文件冲突，则需要解决冲突；
+- 由于 Golang 的特殊需求（Package path），Go 项目的 PR 流程和其它项目有所不同，建议流程如下：
+  1. 先 Fork 本项目，创建你自己的 `github.com/<your_name>/Xray-core.git` 仓库；
+  2. 克隆你自己的 Xray 仓库到本地：`git clone https://github.com/<your_name>/Xray-core.git`；
+  3. 基于 `main` 分支创建新的分支，例如 `git branch issue24 main`；
+  4. 在新创建的分支上作修改并提交修改(commit)；
+  5. 在推送(push)修改完成的分支到自己的仓库前，先切换到 `main` 分支，运行 `git pull https://github.com/XTLS/Xray-core.git` 拉取最新的远端代码；
+  6. 如果上一步拉取得到了新的远端代码，则切换到之前自己创建的分支，运行 `git rebase main` 执行分支合并操作。如遇到文件冲突，则需要解决冲突；
   7. 上一步处理完毕后，就可以把自己创建的分支推送到自己的仓库：`git push -u origin your-branch`
-  8. 最后，把自己仓库的新推送的分支往 `xtls/Xray-core` 的 `main` 分支发 PR 即可；
+  8. 最后，把自己仓库的新推送的分支往 `XTLS/Xray-core` 的 `main` 分支发 PR 即可；
   9. 请在 PR 的标题和正文中，完整表述此次 PR 解决的问题 / 新增的功能 / 代码所做的修改的用意等；
   10. 耐心等待开发者的回应。
 
@@ -132,3 +129,23 @@ Xray-core
 
 - 一个文件包含一个主要类型，及其相关的私有函数等；
 - 测试相关的文件，如 Mock 等工具类，放入 testing 子目录。
+
+#### Int32Range
+
+For end user
+
+一个表示可选范围的值，可以是以下几种写法
+
+-包含在引号里的单独数字或范围
+  - `""` (视为0) 注意部分字段完全不设置和设置为空可能是两种概念
+  - `"114"`
+  - `"114-514"`
+
+-独立的int，这种情况下只能是单数字
+  - `114`
+
+For dev
+
+如果需要在配置文件中包含范围，请使用 `Int32Range` 类型
+
+使用 .From 和 .To 获取值，在 From > To 比如 1919-810 时会自动交换数值确保 From 会小于 To, 如果要获取原始值可以用 .Left 和 .Right

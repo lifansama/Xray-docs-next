@@ -9,7 +9,7 @@ Xray 程序支持使用多个配置文件。
 ## 多文件启动
 
 ::: tip
-启动信息中会提示依次读入的每个配置文件，留意启动信息是否符合你预设的顺序。
+启动信息中会提示依次读入的每个配置文件，留意启动信息是否符合你预设的顺序。可以在每个文件名前面增加前缀数字的方式控制顺序。如 `01_文件名`, `02_文件名`，数字越大排序越靠后。
 :::
 
 ```shell
@@ -24,153 +24,113 @@ $ xray run -confdir /etc/xray/confs
 
 ### 普通对象（`{}`）
 
-**在 json 的顶级对象当中，后者覆盖或补充前者。**
+顶级对象后者覆盖或补充前者
 
-比如：
+### 数组（`[]`）
 
-- base.json
+在 json 配置中的 `inbounds` 和 `outbounds` 是数组结构，他们有特殊的规则：
 
-```json
-{
-  "log": {},
-  "api": {},
-  "dns": {},
-  "stats": {},
-  "policy": {},
-  "transport": {},
-  "routing": {},
-  "inbounds": []
-}
-```
+- 查找原有 `tag` 相同的元素进行覆盖；若无法找到：
+  - 对于 inbounds，添加至最后（inbounds 内元素顺序无关）
+  - 对于 outbounds，添加至最前（outbounds 默认首选出口）；但如果文件名含有 tail（大小写均可），添加至最后。
 
-- outbounds.json
+## 配置例子
+
+假设 `confs` 文件夹下有以下三个配置文件。
+
+- 01.json
 
 ```json
 {
-  "outbounds": []
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "tag": "socks",
+      "protocol": "socks",
+      "listen": "0.0.0.0",
+      "port": 8888
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "direct",
+      "protocol": "freedom"
+    }
+  ]
 }
 ```
 
-以多配置启动 Xray：
-
-```bash
-$ xray run -confdir /etc/xray/confs
-```
-
-这两个配置文件的就等效于合成一起的整配置。当需要修改出口节点，只需要修改 `outbounds.json` 内容。
-
-如果需要改编日志 log 的级别，也不需要改 `base.json`，只需后续增加一个配置：
-
-- debuglog.json
+- 02.json
 
 ```json
 {
   "log": {
     "loglevel": "debug"
-  }
-}
-```
-
-启动顺序放置在 base 后，即可输出 debug 级别的日志
-
-### 数组（`[]`）
-
-在 json 配置中的`inbounds`和`outbounds`是数组结构，他们有特殊的规则：
-
-- 当配置中的数组元素有 2 或以上，覆盖前者的 inbounds/oubounds；
-- 当配置中的数组元素只有 1 个时，查找原有`tag`相同的元素进行覆盖；若无法找到：
-  - 对于 inbounds，添加至最后（inbounds 内元素顺序无关）
-  - 对于 outbounds，添加至最前（outbounds 默认首选出口）；但如果文件名含有 tail（大小写均可），添加至最后。
-
-借助多配置，可以很方便为原有的配置添加不同协议的 inbound，而不必修改原有配置。
-
-以下例子不是有效配置，只为展示上述规则。
-
-- 000.json
-
-```json
-{
+  },
   "inbounds": [
     {
-      "protocol": "socks",
       "tag": "socks",
-      "port": 1234
+      "protocol": "socks",
+      "listen": "127.0.0.1",
+      "port": 1080
+    }
+  ],
+  "outbounds": [
+    {
+      "tag": "block",
+      "protocol": "blackhole"
     }
   ]
 }
 ```
 
-- 001.json
+- 03_tail.json
 
 ```json
 {
-  "inbounds": [
+  "outbounds": [
     {
-      "protocol": "http",
-      "tag": "http"
+      "tag": "direct2",
+      "protocol": "freedom"
     }
   ]
 }
 ```
 
-- 002.json
+三个配置将会合并为：
 
 ```json
 {
+  "log": {
+    "loglevel": "debug"  // 顶级对象覆盖前者
+  },
   "inbounds": [
     {
+      "tag": "socks", // tag 相同时覆盖前者
       "protocol": "socks",
-      "tag": "socks",
-      "port": 4321
+      "listen": "127.0.0.1",
+      "port": 1080 
     }
-  ]
-}
-```
-
-三个配置将会合成为：
-
-```json
-{
-  "inbounds": [
+  ],
+  "outbounds": [
     {
-      "protocol": "socks",
-      "tag": "socks",
-      "port": 4321 // < 002顺序在000后，因此覆盖tag为socks的inbound端口为4321
+      "tag": "block",  // outbounds 添加至最前
+      "protocol": "blackhole"
     },
     {
-      "protocol": "http",
-      "tag": "http"
+      "tag": "direct",
+      "protocol": "freedom"
+    },
+    {
+      "tag": "direct2", // 03_tail.json 文件名中包含 tail 关键字，添加至最后
+      "protocol": "freedom"
     }
   ]
 }
 ```
 
-## 推荐的多文件列表
-
-执行：
-
-```bash
-for BASE in 00_log 01_api 02_dns 03_routing 04_policy 05_inbounds 06_outbounds 07_transport 08_stats 09_reverse; do echo '{}' > "/etc/Xray/$BASE.json"; done
-```
-
-或
-
-```bash
-for BASE in 00_log 01_api 02_dns 03_routing 04_policy 05_inbounds 06_outbounds 07_transport 08_stats 09_reverse; do echo '{}' > "/usr/local/etc/Xray/$BASE.json"; done
-```
-
-```bash
-.
-├── 00_log.json
-├── 01_api.json
-├── 02_dns.json
-├── 03_routing.json
-├── 04_policy.json
-├── 05_inbounds.json
-├── 06_outbounds.json
-├── 07_transport.json
-├── 08_stats.json
-└── 09_reverse.json
-
-0 directories, 10 files
-```
+::: tip
+可以使用 `xray run -confdir=./confs -dump` 命令查看合并后的配置。但是因为 core 内部使用 protobuf 数据格式，所以 `-dump` 选项输出的配置格式会有所不同。
+:::

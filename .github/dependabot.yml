@@ -8,8 +8,8 @@ updates:
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "monthly"
     ignore:
-      - dependency-name: "*vuepress*"
+      - dependency-name: "vue" #https://github.com/XTLS/Xray-docs-next/pull/465
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]

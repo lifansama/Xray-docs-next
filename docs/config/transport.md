@@ -1,62 +1,8 @@
-# 传输方式
+# 传输方式（uTLS、REALITY）
 
 传输方式（transport）是当前 Xray 节点和其它节点对接的方式。
 
 传输方式指定了稳定的数据传输的方式。通常来说，一个网络连接的两端需要有对称的传输方式。比如一端用了 WebSocket，那么另一个端也必须使用 WebSocket，否则无法建立连接。
-
-传输方式（transport）配置有两部分:
-
-1. 全局配置（[TransportObject](#transportobject)）
-2. 局部配置（[StreamSettingsObject](#streamsettingsobject)）。
-
-- 局部配置时,可以指定每个单独的入站或出站用怎样的方式传输。
-- 通常来说客户端和服务器对应的入站和出站需要使用同样的传输方式。当其配置指定了一种传输方式，但没有填写具体设置时，此传输方式会使用全局配置中的设置。
-
-## TransportObject
-
-`TransportObject` 对应配置文件的 `transport` 项。
-
-```json
-{
-  "transport": {
-    "tcpSettings": {},
-    "kcpSettings": {},
-    "wsSettings": {},
-    "httpSettings": {},
-    "quicSettings": {},
-    "dsSettings": {},
-    "grpcSettings": {}
-  }
-}
-```
-
-> `tcpSettings`: [TcpObject](./transports/tcp.md)
-
-针对 TCP 连接的配置。
-
-> `kcpSettings`: [KcpObject](./transports/mkcp.md)
-
-针对 mKCP 连接的配置。
-
-> `wsSettings`: [WebSocketObject](./transports/websocket.md)
-
-针对 WebSocket 连接的配置。
-
-> `httpSettings`: [HttpObject](./transports/h2.md)
-
-针对 HTTP/2 连接的配置。
-
-> `quicSettings`: [QuicObject](./transports/quic.md)
-
-针对 QUIC 连接的配置。
-
-> `grpcSettings`: [GRPCObject](./transports/grpc.md)
-
-针对 gRPC 连接的配置。
-
-> `dsSettings`: [DomainSocketObject](./transports/domainsocket.md)
-
-针对 Domain Socket 连接的配置。
 
 ## StreamSettingsObject
 
@@ -67,78 +13,95 @@
   "network": "tcp",
   "security": "none",
   "tlsSettings": {},
-  "xtlsSettings": {},
+  "realitySettings": {},
   "tcpSettings": {},
   "kcpSettings": {},
   "wsSettings": {},
   "httpSettings": {},
-  "quicSettings": {},
-  "dsSettings": {},
   "grpcSettings": {},
+  "httpupgradeSettings": {},
+  "xhttpSettings": {},
   "sockopt": {
     "mark": 0,
+    "tcpMaxSeg": 1440,
     "tcpFastOpen": false,
     "tproxy": "off",
     "domainStrategy": "AsIs",
     "dialerProxy": "",
-    "acceptProxyProtocol": false
+    "acceptProxyProtocol": false,
+    "tcpKeepAliveInterval": 0,
+    "tcpKeepAliveIdle": 300,
+    "tcpUserTimeout": 10000,
+    "tcpCongestion": "bbr",
+    "interface": "wg0",
+    "v6only": false,
+    "tcpWindowClamp": 600,
+    "tcpMptcp": false,
+    "tcpNoDelay": false
   }
 }
 ```
 
-> `network`: "tcp" | "kcp" | "ws" | "http" | "domainsocket" | "quic" | "grpc"
+> `network`: "raw" | "ws" | "h2" | "grpc" | "kcp" | "httpupgrade" | "xhttp"
 
-连接的数据流所使用的传输方式类型，默认值为 `"tcp"`
+连接的数据流所使用的传输方式类型，默认值为 `"raw"`
 
-> `security`: "none" | "tls" | "xtls"
+::: tip
+v24.9.30 版本后，为了更贴近实际行为，tcp传输方式已更名为raw, 为了兼容性，`"network": "raw"` 和 "network": "tcp", `rawSettings`和`tcpSettings` 互为别名
+:::
+
+::: tip
+"h2" 可以写成 "http"，"grpc" 可以写成 "gun"，"kcp" 可以写成 "mkcp"。
+:::
+
+> `security`: "none" | "tls" | "reality"
 
 是否启用传输层加密，支持的选项有
 
 - `"none"` 表示不加密（默认值）
-- `"tls"` 表示使用 [TLS](https://en.wikipedia.org/wiki/base/transport_Layer_Security)。
-- `"xtls"` 表示使用 [XTLS](./features/xtls.md)。
+- `"tls"` 表示使用 [TLS](https://zh.wikipedia.org/wiki/%E5%82%B3%E8%BC%B8%E5%B1%A4%E5%AE%89%E5%85%A8%E6%80%A7%E5%8D%94%E5%AE%9A)。
+- `"reality"` 表示使用 REALITY。
 
 > `tlsSettings`: [TLSObject](#tlsobject)
 
 TLS 配置。TLS 由 Golang 提供，通常情况下 TLS 协商的结果为使用 TLS 1.3，不支持 DTLS。
 
-> `xtlsSettings`: [XTLSObject](#tlsobject)
+> `realitySettings`: [RealityObject](#realityobject)
 
-XTLS 配置。XTLS 是 Xray 的原创黑科技, 也是使 Xray 性能一骑绝尘的核心动力。 XTLS 与 TLS 有相同的安全性, 配置方式也和 TLS 一致.
-点击此处查看 [XTLS 的技术细节剖析](./features/xtls.md)
+Reality 配置。Reality 是 Xray 的原创黑科技。 Reality 比 TLS 的安全性更高, 配置方式也和 TLS 一致.
 
 ::: tip
-TLS / XTLS 是目前最安全的传输加密方案, 且外部看来流量类型和正常上网具有一致性。 启用 XTLS 并且配置合适的 XTLS 流控模式, 可以在保持和 TLS 相同的安全性的前提下,
-性能达到数倍甚至十几倍的提升。 当 `security` 的值从 `tls` 改为 `xtls` 时, 只需将 `tlsSettings` 修改成为 `xtlsSettings`
+Reality 是目前最安全的传输加密方案, 且外部看来流量类型和正常上网具有一致性。 启用 Reality 并且配置合适的 XTLS Vision 流控模式, 可以
+达到数倍甚至十几倍的性能提升。
 :::
 
-> `tcpSettings`: [TcpObject](./transports/tcp.md)
+> `rawSettings`: [TcpObject](./transports/raw.md)
 
-当前连接的 TCP 配置，仅当此连接使用 TCP 时有效。配置内容与上面的全局配置相同。
+当前连接的 raw 配置，仅当此连接使用 raw 时有效。
 
 > `kcpSettings`: [KcpObject](./transports/mkcp.md)
 
-当前连接的 mKCP 配置，仅当此连接使用 mKCP 时有效。配置内容与上面的全局配置相同。
+当前连接的 mKCP 配置，仅当此连接使用 mKCP 时有效。
 
 > `wsSettings`: [WebSocketObject](./transports/websocket.md)
 
-当前连接的 WebSocket 配置，仅当此连接使用 WebSocket 时有效。配置内容与上面的全局配置相同。
+当前连接的 WebSocket 配置，仅当此连接使用 WebSocket 时有效。
 
-> `httpSettings`: [HttpObject](./transports/h2.md)
+> `httpSettings`: [HttpObject](./transports/http.md)
 
-当前连接的 HTTP/2 配置，仅当此连接使用 HTTP/2 时有效。配置内容与上面的全局配置相同。
-
-> `quicSettings`: [QUICObject](./transports/quic.md)
-
-当前连接的 QUIC 配置，仅当此连接使用 QUIC 时有效。配置内容与上面的全局配置相同。
+当前连接的 HTTP 配置，仅当此连接使用 HTTP 时有效。
 
 > `grpcSettings`: [GRPCObject](./transports/grpc.md)
 
-当前连接的 gRPC 配置，仅当此连接使用 gRPC 时有效。配置内容与上面的全局配置相同。
+当前连接的 gRPC 配置，仅当此连接使用 gRPC 时有效。。
 
-> `dsSettings`: [DomainSocketObject](./transports/domainsocket.md)
+> `httpupgradeSettings`: [HttpUpgradeObject](./transports/httpupgrade.md)
 
-当前连接的 Domain socket 配置，仅当此连接使用 Domain socket 时有效。配置内容与上面的全局配置相同。
+当前连接的 HTTPUpgrade 配置，仅当此连接使用 HTTPUpgrade 时有效。
+
+> `xhttpSettings`: [XHttpObject](./transports/splithttp.md)
+
+当前连接的 XHTTP 配置，仅当此连接使用 XHTTP 时有效。
 
 > `sockopt`: [SockoptObject](#sockoptobject)
 
@@ -158,7 +121,10 @@ TLS / XTLS 是目前最安全的传输加密方案, 且外部看来流量类型�
   "certificates": [],
   "disableSystemRoot": false,
   "enableSessionResumption": false,
-  "fingerprint": ""
+  "fingerprint": "",
+  "pinnedPeerCertificateChainSha256": [""],
+  "curvePreferences": [""],
+  "masterKeyLog": ""
 }
 ```
 
@@ -166,7 +132,13 @@ TLS / XTLS 是目前最安全的传输加密方案, 且外部看来流量类型�
 
 指定服务器端证书的域名，在连接由 IP 建立时有用。
 
-当目标连接由域名指定时，比如在 Socks 入站接收到了域名，或者由 Sniffing 功能探测出了域名，这个域名会自动用于 `serverName`，无须手动配置。
+当留空时，自动使用address中的值（如果是域名），该值同时用于校验服务端证书是否有效。
+
+::: tip
+如上所述，因为该值同时用于校验服务端证书是否有效，如果出于特殊目的将其修改为与服务端证书域名不一致的需要需要开启 ```allowInsecure``` 否则会导致证书认证失败。出于安全考虑我们不推荐长期使用这种方法，如果想要安全地伪造SNI，请考虑使用REALITY。
+
+特别地，当客户端设置其为IP地址时，xray不会发送SNI，同样的要使用此功能也必须同时开启 ```allowInsecure```
+:::
 
 > `rejectUnknownSni`: bool
 
@@ -176,15 +148,15 @@ TLS / XTLS 是目前最安全的传输加密方案, 且外部看来流量类型�
 
 一个字符串数组，指定了 TLS 握手时指定的 ALPN 数值。默认值为 `["h2", "http/1.1"]`。
 
-> `minVersion`: \[ string \]
+> `minVersion`: string
 
-minVersion 为可接受的最小 SSL/TLS 版本。
+minVersion 为可接受的最小 TLS 版本。
 
-> `maxVersion`: \[ string \]
+> `maxVersion`: string
 
-maxVersion 为可接受的最大 SSL/TLS 版本。
+maxVersion 为可接受的最大 TLS 版本。
 
-> `cipherSuites`: \[ string \]
+> `cipherSuites`: string
 
 CipherSuites 用于配置受支持的密码套件列表, 每个套件名称之间用:进行分隔.
 
@@ -215,17 +187,54 @@ CipherSuites 用于配置受支持的密码套件列表, 每个套件名称之�
 
 此参数的设置为 false 时, ClientHello 里没有 session_ticket 这个扩展。 通常来讲 go 语言程序的 ClientHello 里并没有用到这个扩展, 因此建议保持默认值。 默认值为 `false`。
 
-> `fingerprint` : "" | "chrome" | "firefox" | "safari" | "randomized"
+> `fingerprint` : string
 
-此参数用于配置指定 `TLS Client Hello` 的指纹。当其值为空时，表示不启用此功能。启用后，Xray 将通过 uTLS 库 **模拟** `TLS` 指纹，或随机生成。
+此参数用于配置指定 `TLS Client Hello` 的指纹。当其值为空时，表示不启用此功能。启用后，Xray 将通过 uTLS 库 **模拟** `TLS` 指纹，或随机生成。支持三种配置方式：
+
+1. 常见浏览器最新版本的 TLS 指纹 包括
+
+- `"chrome"`
+- `"firefox"`
+- `"safari"`
+- `"ios"`
+- `"android"`
+- `"edge"`
+- `"360"`
+- `"qq"`
+
+2. 在 xray 启动时自动生成一个指纹
+
+- `"random"`: 在较新版本的浏览器里随机抽取一个
+- `"randomized"`: 完全随机生成一个独一无二的指纹 (100% 支持 TLS 1.3 使用 X25519)
+
+3. 使用 uTLS 原生指纹变量名 例如`"HelloRandomizedNoALPN"` `"HelloChrome_106_Shuffle"`。完整名单见 [uTLS 库](https://github.com/refraction-networking/utls/blob/master/u_common.go#L434)
 
 ::: tip
 此功能仅 **模拟** `TLS Client Hello` 的指纹，行为、其他指纹与 Golang 相同。如果你希望更加完整地模拟浏览器 `TLS`
 指纹与行为，可以使用 [Browser Dialer](./transports/websocket.md#browser-dialer)。
 :::
 
-- `"chrome" | "firefox" | "safari"`: 模拟 Chrome / Firefox / Safari 的 TLS 指纹
-- `"randomized"`: 使用随机指纹
+::: tip
+当使用此功能时，TLS 的部分影响TLS指纹的选项将被 utls 库覆盖不再生效，列如ALPN。
+会被传递的参数有
+`"serverName" "allowInsecure" "disableSystemRoot" "pinnedPeerCertificateChainSha256" "masterKeyLog"`
+:::
+
+> `pinnedPeerCertificateChainSha256`: \[string\]
+
+用于指定远程服务器的证书链 SHA256 散列值，使用标准编码格式。仅有当服务器端证书链散列值符合设置项中之一时才能成功建立 TLS 连接。
+
+注意：只有验证证书有效后，核心才会进行此检查，比如如果自签证书并在此指定，核心在验证证书失败后会直接断开连接而不会进行这个检查，如有类似需求可以考虑开启 `allowInsecure` 跳过签名验证然后便可以正常工作
+
+在连接因为此配置失败时，会展示远程服务器证书散列值。
+
+::: danger
+不建议使用这种方式获得证书链散列值，因为在这种情况下将没有机会验证此时服务器提供的证书是否为真实证书，进而不保证获得的证书散列值为期望的散列值。
+:::
+
+::: tip
+如果需要获得证书的散列值，应在命令行中运行 `xray tls certChainHash --cert <cert.pem>` 来获取，`<cert.pem>` 应替换为实际证书文件路径。
+:::
 
 > `certificates`: \[ [CertificateObject](#certificateobject) \]
 
@@ -236,6 +245,137 @@ CipherSuites 用于配置受支持的密码套件列表, 每个套件名称之�
 请参考 [这里](https://github.com/XTLS/Xray-core/discussions/56#discussioncomment-215600).
 :::
 
+> `curvePreferences`: \[ string \]
+
+一个字符串数组，指定 TLS 握手执行ECDHE时偏好的曲线。支持的曲线列表如下（大小写不敏感）
+
+```
+CurveP256
+CurveP384
+CurveP521
+X25519
+x25519Kyber768Draft00
+```
+
+比如设置为 `"curvePreferences":["x25519Kyber768Draft00"]` 可以启用实验性的后量子算法。由于还是草案阶段该字段随时可能变化。
+
+> `masterKeyLog` : string
+
+(Pre)-Master-Secret log 文件路径，可用于Wireshark等软件解密Xray发送的TLS连接，暂不支持与utls一起使用。
+
+### RealityObject
+
+```json
+{
+  "show": false,
+  "target": "example.com:443",
+  "xver": 0,
+  "serverNames": ["example.com", "www.example.com"],
+  "privateKey": "",
+  "minClientVer": "",
+  "maxClientVer": "",
+  "maxTimeDiff": 0,
+  "shortIds": ["", "0123456789abcdef"],
+  "fingerprint": "chrome",
+  "serverName": "",
+  "publicKey": "",
+  "shortId": "",
+  "spiderX": ""
+}
+```
+
+::: tip
+更多信息请参考 [REALITY 项目](https://github.com/XTLS/REALITY).
+:::
+
+> `show` : true | false
+
+当值为 `true` 时，输出调试信息。
+
+::: tip
+以下为**入站**（**服务端**）配置。
+:::
+
+> `target` : string
+
+必填，格式同 VLESS `fallbacks` 的 [dest](./features/fallback.md#fallbackobject)。
+
+旧称 dest, 当前版本两个字段互为alias
+
+::: warning
+为了伪装的效果考虑，Xray对于鉴权失败（非合法reality请求）的流量，会**直接转发**至 target.
+如果 target 网站的 IP 地址特殊（如使用了 CloudFlare CDN 的网站） 则相当于你的服务器充当了 CloudFlare 的端口转发，可能造成被扫描后偷跑流量的情况。
+为了杜绝这种情况，可以考虑前置Nginx等方法过滤掉不符合要求的SNI。
+:::
+
+> `xver` : number
+
+选填，格式同 VLESS `fallbacks` 的 [xver](./features/fallback.md#fallbackobject)
+
+> `serverNames` : \[string\]
+
+必填，客户端可用的 `serverName` 列表，暂不支持 \* 通配符。
+
+一般与target保持一致即可，实际的可选值为服务器所接受的任何SNI（依据 target 本身的配置有所不同），一个参考是所返回证书的 [SAN](https://zh.wikipedia.org/wiki/%E4%B8%BB%E9%A2%98%E5%A4%87%E7%94%A8%E5%90%8D%E7%A7%B0).
+
+其中可包含空值 ```""``` 代表接受没有SNI的连接。
+
+> `privateKey` : string
+
+必填，执行 `./xray x25519` 生成。
+
+> `minClientVer` : string
+
+选填，客户端 Xray 最低版本，格式为 `x.y.z`。
+
+> `maxClientVer` : string
+
+选填，客户端 Xray 最高版本，格式为 `x.y.z`。
+
+> `maxTimeDiff` : number
+
+选填，允许的最大时间差，单位为毫秒。
+
+> `shortIds` : \[string\]
+
+必填，客户端可用的 `shortId` 列表，可用于区分不同的客户端。
+
+格式要求见 `shortId`
+
+若包含空值，客户端 `shortId` 可为空。
+
+::: tip
+以下为**出站**（**客户端**）配置。
+:::
+
+> `serverName` : string
+
+服务端 serverNames 之一。
+
+当服务端 ```serverNames``` 中包含空值时，与 TLS 类似可以在客户端使用 ```"serverName": "0.0.0.0"``` 发起无SNI的连接。与TLS不同，REALITY使用这个功能并不需要开启也没有允许不安全选项。当使用此功能时请确保target在接受无SNI的连接时会返回默认证书。
+
+> `fingerprint` : string
+
+必填，同 [TLSObject](#tlsobject)。
+
+> `shortId` : string
+
+服务端 shortIds 之一。
+
+长度为 8 个字节，即 16 个 0~f 的数字字母，可以小于16个，核心将会自动在后面补0, 但位数必须是**偶数** (因为一个字节有2位16进制数)
+
+如 `aa1234` 会被自动补全为 `aa12340000000000`, 但是`aaa1234` 则会导致错误。
+
+0也是偶数，所以若服务端的 `shordIDs` 包含空值 `""` ，客户端也可为空。
+
+> `publicKey` : string
+
+必填，服务端私钥对应的公钥。使用 `./xray x25519 -i "服务器私钥"` 生成。
+
+> `spiderX` : string
+
+爬虫初始路径与参数，建议每个客户端不同。
+
 #### CertificateObject
 
 ```json
@@ -243,6 +383,7 @@ CipherSuites 用于配置受支持的密码套件列表, 每个套件名称之�
   "ocspStapling": 3600,
   "oneTimeLoading": false,
   "usage": "encipherment",
+  "buildChain": false,
   "certificateFile": "/path/to/certificate.crt",
   "keyFile": "/path/to/key.key",
   "certificate": [
@@ -340,6 +481,14 @@ OCSP 装订更新，与证书热重载的时间间隔。 单位：秒。默认�
 如已经拥有一个域名, 可以使用工具便捷的获取免费第三方证书,如[acme.sh](https://github.com/acmesh-official/acme.sh)
 :::
 
+> `buildChain`: true | false
+
+仅当证书用途为 `issue` 时生效，若值为 `true` ，签发证书时将CA证书嵌入证书链。
+
+::: tip TIP 1
+不应该将根证书嵌入证书链。该选项只适合在签名CA证书为中间证书时启用。
+:::
+
 > `certificateFile`: string
 
 证书文件路径，如使用 OpenSSL 生成，后缀名为 .crt。
@@ -361,20 +510,35 @@ OCSP 装订更新，与证书热重载的时间间隔。 单位：秒。默认�
 ```json
 {
   "mark": 0,
+  "tcpMaxSeg": 1440,
   "tcpFastOpen": false,
   "tproxy": "off",
   "domainStrategy": "AsIs",
   "dialerProxy": "",
-  "acceptProxyProtocol": false
+  "acceptProxyProtocol": false,
+  "tcpKeepAliveInterval": 0,
+  "tcpKeepAliveIdle": 300,
+  "tcpUserTimeout": 10000,
+  "tcpcongestion": "bbr",
+  "interface": "wg0",
+  "V6Only": false,
+  "tcpWindowClamp": 600
+  "tcpMptcp": false,
+  "tcpNoDelay": false,
+  "customSockopt": []
 }
 ```
 
 > `mark`: number
 
-一个整数。当其值非零时，在 ountbound 连接以此数值上标记 SO_MARK。
+一个整数。当其值非零时，在 outbound 连接上以此数值标记 SO_MARK。
 
 - 仅适用于 Linux 系统。
 - 需要 CAP_NET_ADMIN 权限。
+
+> `tcpMaxSeg`: number
+
+用于设置 TCP 数据包的最大传输单元。
 
 > `tcpFastOpen`: true | false | number
 
@@ -384,12 +548,12 @@ OCSP 装订更新，与证书热重载的时间间隔。 单位：秒。默认�
 
 - 仅在以下版本（或更新版本）的操作系统中可用:
 
-  - Windows 10 (1607)
-  - Mac OS 10.11 / iOS 9
   - Linux 3.16：需要通过内核参数 `net.ipv4.tcp_fastopen` 进行设定，此参数是一个 bitmap，`0x1` 代表客户端允许启用，`0x2` 代表服务器允许启用；默认值为 `0x1`，如果服务器要启用
     TFO，请把此内核参数值设为 `0x3`。
+  - ~~Windows 10 (1607)~~（实现不正确）
+  - Mac OS 10.11 / iOS 9（需要测试）
   - FreeBSD 10.3 (Server) / 12.0 (Client)：需要把内核参数 `net.inet.tcp.fastopen.server_enabled`
-    以及 `net.inet.tcp.fastopen.client_enabled` 设为 `1`。
+    以及 `net.inet.tcp.fastopen.client_enabled` 设为 `1`。（需要测试）
 
 - 对于 Inbound，此处所设定的`正整数`代表 [待处理的 TFO 连接请求数上限](https://tools.ietf.org/html/rfc7413#section-5.1) ，**注意并非所有操作系统都支持在此设定**：
 
@@ -404,7 +568,7 @@ OCSP 装订更新，与证书热重载的时间间隔。 单位：秒。默认�
 
 是否开启透明代理（仅适用于 Linux）。
 
-- `"redirect"`：使用 Redirect 模式的透明代理。支持所有基于 IPv4/6 的 TCP 和 UDP 连接。
+- `"redirect"`：使用 Redirect 模式的透明代理。支持所有基于 IPv4/6 的 TCP 连接。
 - `"tproxy"`：使用 TProxy 模式的透明代理。支持所有基于 IPv4/6 的 TCP 和 UDP 连接。
 - `"off"`：关闭透明代理。
 
@@ -415,18 +579,29 @@ OCSP 装订更新，与证书热重载的时间间隔。 单位：秒。默认�
 设置中的`tproxy` 的值会被设为 `"redirect"`。
 :::
 
-> `domainStrategy`: "AsIs" | "UseIP" | "UseIPv4" | "UseIPv6"
+> `domainStrategy`: "AsIs"<br>
+> "UseIP" | "UseIPv6v4" | "UseIPv6" | "UseIPv4v6" | "UseIPv4"<br>
+> "ForceIP" | "ForceIPv6v4" | "ForceIPv6" | "ForceIPv4v6" | "ForceIPv4"
+
 
 在之前的版本中，当 Xray 尝试使用域名建立系统连接时，域名的解析由系统完成，不受 Xray
 控制。这导致了在 [非标准 Linux 环境中无法解析域名](https://github.com/v2ray/v2ray-core/issues/1909) 等问题。为此，Xray 1.3.1 为 Sockopt 引入了 Freedom
 中的 domainStrategy，解决了此问题。
 
-在目标地址为域名时, 配置相应的值, SystemDialer 的行为模式如下:
+默认值 `"AsIs"`。
 
-- `"AsIs"`: 通过系统 DNS 服务器解析获取 IP, 向此域名发出连接。
-- `"UseIP"`、`"UseIPv4"` 和 `"UseIPv6"`: 使用[内置 DNS 服务器](./dns.md)解析获取 IP 后, 直接向此 IP 发出连接。
+当目标地址为域名时，配置相应的值，Outbound 连接远端服务器的行为模式如下：
 
-默认值为 `"AsIs"`。
+- 当使用 `"AsIs"` 时，Xray 将直接使用 go 自带的 Dial 发起连接，优先级固定为 RFC6724 的默认值(不会遵守 gai.conf 等配置) (人话：IPv6 优先)。
+- 当填写其他值时，将使用 Xray-core [内置 DNS 服务器](../dns.md) 服务器进行解析。若不存在DNSObject，则使用系统DNS。若有多个符合条件的IP地址时，核心会随机选择一个IP作为目标IP。
+- `"IPv4"` 代表尝试仅使用IPv4进行连接，`"IPv4v6"` 代表尝试使用IPv4或IPv6连接，但对于双栈域名，使用IPv4。（v4v6调换后同理，不再赘述）
+- 当在内置DNS设置了 `"queryStrategy"` 后，实际行为将会与这个选项取并，只有都被包含的IP类型才会被解析，如 `"queryStrategy": "UseIPv4"` `"domainStrategy": "UseIP"`，实际上等同于 `"domainStrategy": "UseIPv4"`。
+- 当使用 `"Use"` 开头的选项时，若解析结果不符合要求（如，域名只有IPv4解析结果但使用了UseIPv6），则会回落回AsIs。
+- 当使用 `"Force"` 开头的选项时，若解析结果不符合要求，则该连接会无法建立。
+
+::: tip TIP
+当使用 `"UseIP"`、`"ForceIP"` 模式时，并且 [出站连接配置](../outbound.md#outboundobject) 中指定了 `sendThrough` 时，核心会根据 `sendThrough` 的值自动判断所需的 IP 类型，IPv4 或 IPv6。若手动指定了单种IP类型（如UseIPv4），但与 `sendThrough` 指定的本地地址不匹配，将会导致连接失败。
+:::
 
 ::: danger
 
@@ -474,3 +649,107 @@ OCSP 装订更新，与证书热重载的时间间隔。 单位：秒。默认�
 常见的反代软件（如 HAProxy、Nginx）都可以配置发送它，VLESS fallbacks xver 也可以发送它。
 
 填写 `true` 时，最底层 TCP 连接建立后，请求方必须先发送 PROXY protocol v1 或 v2，否则连接会被关闭。
+
+> `tcpKeepAliveInterval`: number
+
+TCP 保持活跃的数据包发送间隔，单位为秒。~~该设置仅适用于 Linux 下。~~
+
+它是连接不正常（未收到 ack）时候的心跳包。
+
+不配置此项或配置为 0 表示使用 Go 默认值。
+
+::: tip
+填负数时，如 `-1`，不启用 TCP 保持活跃。
+:::
+
+> `tcpKeepAliveIdle`: number
+
+TCP 空闲时间阈值，单位为秒。当 TCP 连接空闲时间达到这个阈值时，将开始发送 Keep-Alive 探测包。
+
+它是连接正常时候的心跳包。
+
+不配置此项或配置为 0 表示使用 Go 默认值。
+
+::: tip
+填负数时，如 `-1`，不启用 TCP 保持活跃。
+:::
+
+> `tcpUserTimeout`: number
+
+单位为毫秒。详细介绍：https://github.com/grpc/proposal/blob/master/A18-tcp-user-timeout.md
+
+> `tcpcongestion`: ""
+
+TCP 拥塞控制算法。仅支持 Linux。
+不配置此项表示使用系统默认值。
+
+::: tip 常见的算法
+
+- bbr（推荐）
+- cubic
+- reno
+
+:::
+
+::: tip
+执行命令 `sysctl net.ipv4.tcp_congestion_control` 获取系统默认值。
+:::
+
+> `interface`: ""
+
+指定绑定出口网卡名称，支持 linux / iOS / Mac OS / Windows。<br>
+iOS / Mac OS 需要 Xray-core v1.8.6 或更高版本。<br>
+Windows 需要 Xray-core v1.8.7 或更高版本。
+
+> `V6Only`: true | false
+
+填写 `true` 时，监听 `::` 地址仅接受 IPv6 连接。仅支持 Linux。
+
+> `tcpWindowClamp`: number
+
+绑定通告的 windows 大小为该值。内核会在它与 SOCK_MIN_RCVBUF/2 之间选一个最大值。
+
+> `tcpMptcp`: true | false
+
+Xray-core v1.8.6 新增参数。<br>
+默认值 `false`，填写 `true` 时，启用 [Multipath TCP](https://en.wikipedia.org/wiki/Multipath_TCP)，需在服务端和客户端配置中同时启用。
+当前仅支持Linux，需要Linux Kernel 5.6及以上。
+
+> `tcpNoDelay`: true | false
+
+默认值 `false`，建议与 `"tcpMptcp": true` 一起启用。
+
+> `customSockopt`: []
+
+一个数组，用于高级用户指定需要的任何 sockopt, 理论上上述所有与连接有关的设置均可以在此等价设置, 自然也可以设置Linux中存在但是核心未添加的其他选项，下方示例等价于核心中的 `"tcpcongestion": "bbr"`
+
+使用前请确保你了解 Linux Socket 编程。
+
+```json
+"customSockopt": [
+  {
+    "type": "str",
+    "level":"6",
+    "opt": "13",
+    "value": "bbr"
+  }
+]
+```
+
+> `type`: ""
+
+必填，设置的类型，目前可选int或str.
+
+> `level`: ""
+
+可选，协议级别，用于指定生效范围，默认为6, 即TCP.
+
+> `opt`: ""
+
+操作的选项名称，使用十进制(此处示例为 TCP_CONGESTION 的值 定义为 0xd 转换为10进制即为13)
+
+> `value`: ""
+
+要设置的选项值，此处示例为设置为bbr.
+
+当 type 指定为 int 时需要使用十进制数字。

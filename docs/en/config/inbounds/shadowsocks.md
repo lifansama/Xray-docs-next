@@ -1,26 +1,30 @@
 # Shadowsocks
 
-[Shadowsocks](https://zh.wikipedia.org/wiki/Shadowsocks) 协议，兼容大部分其它版本的实现。
+The [Shadowsocks](https://en.wikipedia.org/wiki/Shadowsocks) protocol is compatible with most other implementations of Shadowsocks. The server supports TCP and UDP packet forwarding, with an option to selectively disable UDP.
 
-目前兼容性如下：
+### Supported Encryption Methods
+The currently supported methods are following:
 
-- 支持 TCP 和 UDP 数据包转发，其中 UDP 可选择性关闭；
-- 推荐的加密方式：
+- Recommended encryption methods:
+  - `2022-blake3-aes-128-gcm`
+  - `2022-blake3-aes-256-gcm`
+  - `2022-blake3-chacha20-poly1305`
+- Other encryption methods:
+  - `aes-256-gcm`
+  - `aes-128-gcm`
+  - `chacha20-poly1305`/`chacha20-ietf-poly1305`
+  - `xchacha20-poly1305`/`xchacha20-ietf-poly1305`
+  - `none`/`plain`
 
-  - AES-256-GCM
-  - AES-128-GCM
-  - ChaCha20-Poly1305 或称 ChaCha20-IETF-Poly1305
-  - none 或 plain
+The Shadowsocks 2022 new protocol format improves performance and includes complete replay protection, addressing the following security issues in the old protocol:
 
-  不推荐的加密方式:
-
-  - AES-256-CFB
-  - AES-128-CFB
-  - ChaCha20
-  - ChaCha20-IETF
+- [Serious vulnerabilities in Shadowsocks AEAD encryption, which cannot guarantee the integrity of the communication content](https://github.com/shadowsocks/shadowsocks-org/issues/183)
+- Increasing false positive rate of the original TCP replay filter over time
+- Lack of UDP replay protection
+- TCP behaviors that can be used for active probing
 
 ::: danger
-"none" 不加密方式下，服务器端不会验证 "password" 中的密码。为确保安全性, 一般需要加上 TLS 并在传输层使用安全配置，例如 WebSocket 配置较长的 path
+Traffic transmitted without encryption using the "none" method will be in plain text. **Do not use it on public networks** for security reasons.
 :::
 
 ## InboundConfigurationObject
@@ -28,22 +32,23 @@
 ```json
 {
   "settings": {
-    "clients": [
-      {
-        "password": "密码",
-        "method": "aes-256-gcm",
-        "level": 0,
-        "email": "love@xray.com"
-      }
-    ],
+    "clients": [],
+    "password": "password",
+    "method": "aes-256-gcm",
+    "level": 0,
+    "email": "love@xray.com",
     "network": "tcp,udp"
   }
 }
 ```
 
+> `clients`: a list of [`ClientObject`](#clientobject), empty list considered valid
+
+The `password` parameter can be specified for the server at all, but also in the [`ClientObject`](#clientobject) being dedicated to the given user. Server-level `password` is not guaranteed to override the client-specific one.
+
 > `network`: "tcp" | "udp" | "tcp,udp"
 
-可接收的网络协议类型。比如当指定为 `"tcp"` 时，仅会接收 TCP 流量。默认值为 `"tcp"`。
+The supported network protocol type. For example, when specified as `"tcp"`, it will only handle TCP traffic. The default value is `"tcp"`.
 
 ## ClientObject
 
@@ -56,32 +61,37 @@
 }
 ```
 
-::: tip
-(v1.2.3+) Xray 支持 Shadowsocks 单端口多用户，但是需要将该入站所有用户的加密方式设置为 AEAD。
-:::
-
 > `method`: string
 
-必填。
-
-- 推荐的加密方式：
-  - AES-256-GCM
-  - AES-128-GCM
-  - ChaCha20-Poly1305 或称 ChaCha20-IETF-Poly1305
-  - none 或 plain
+Required, any of the [supported methods](#supportedencryptionmethods)
 
 > `password`: string
 
-必填，任意字符串。
+Required. For **Shadowsocks 2022** a pre-shared `base64` random key similar to WireGuard's keys should be used as the password. The command 
+```sh
+openssl rand -base64 <length>
+```
+could used to generate a key. The length of the required key for `shadowsocks-rust` implementation depends on the encryption method:
 
-Shadowsocks 协议不限制密码长度，但短密码会更可能被破解，建议使用 16 字符或更长的密码。
+| Encryption Method               | Key Length |
+| -----------------------------   | ---------: |
+| `2022-blake3-aes-128-gcm`       |         16 |
+| `2022-blake3-aes-256-gcm`       |         32 |
+| `2022-blake3-chacha20-poly1305` |         32 |
+
+In the `go-shadowsocks` implementation written in Golang, a 32-byte key always works. 
+
+For **any other encryption method** _any string_ could be used. There is no limitation on the password length, but shorter passwords are more susceptible to cracking. It is recommended to use a random-generated password of 16 characters or longer. The following example generates 40-characters length password:
+```sh
+sudo strings /dev/urandom | grep -o '[[:alnum:]]' | head -n 40 | tr -d '\n'; echo
+```
 
 > `level`: number
 
-用户等级，连接会使用这个用户等级对应的 [本地策略](../policy.md#levelpolicyobject)。
+The user level that the connection will use to determine the corresponding [Local Policy](../policy.md#levelpolicyobject).
 
-`level` 的值, 对应 [policy](../policy.md#levelpolicyobject) 中 `level` 的值。 如不指定, 默认为 0。
+The value of `level` corresponds to the value of `level` in the [policy](../policy.md#policyobject). If not specified, the default value is 0.
 
 > `email`: string
 
-用户邮箱，用于区分不同用户的流量（日志、统计）。
+The user's email, used to differentiate traffic from different users for logs or statistics.

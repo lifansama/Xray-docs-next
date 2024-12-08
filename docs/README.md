@@ -50,8 +50,6 @@ footer: Licensed under CC-BY-SA 4.0 | Copyright 2020-Present Project X Community
 
 > “配置兼容，整体更好”
 
-- Xray-flutter 是一个优雅的跨平台图形界面工具. <Badge text="WIP" type="warning"/>
-
 ### 我们是谁？
 
 > **It doesn't matter who we are. What matters is that we will keep riding and never look back.**
@@ -62,7 +60,7 @@ footer: Licensed under CC-BY-SA 4.0 | Copyright 2020-Present Project X Community
 
 - 🖥️ 帮助开发和测试 Xray, 提交高质量的 Pull request.
 - 📩 在 [GitHub Issues](https://github.com/XTLS/Xray-core/issues) 或 [讨论区](https://github.com/XTLS/Xray-core/discussions)发起建设性或有意义的 issue 与 discussion.
-- 📝 写下您的使用心得并提交至 Xray 的 [文档网站](https://github.com/XTLS/XTLS.github.io).
+- 📝 写下您的使用心得并提交至 Xray 的 [文档网站](https://github.com/XTLS/Xray-docs-next).
 - 💬 在 Telegram 群帮助群友/灌水.
 - **...事实上,每一份对 Xray 的支持都会让 Xray 变得更强大**
 
@@ -74,7 +72,13 @@ footer: Licensed under CC-BY-SA 4.0 | Copyright 2020-Present Project X Community
   - 有问题尽管随便问，知道的尽量回答。
   - 禁政治，禁 NSFW
 
+- [Project VLESS Group](https://t.me/projectVless)
+
+  - 对非中文参与的官方用户群。 [Project X](https://t.me/projectXray) 的姊妹群。
+  - 禁广告，禁人身攻击，禁政治。
+
 - [Project X 频道](https://t.me/projectXtls)
+
   - 发布 Project X 的最新资讯
 
 ### 致谢
@@ -85,17 +89,15 @@ footer: Licensed under CC-BY-SA 4.0 | Copyright 2020-Present Project X Community
 - 感谢提出有意义的建议和意见的朋友们.
 - 感谢 Telegram 群每一位帮助群友的朋友.
 
-### 更多关于 project X
+### 更多关于 Project X
 
-- 如果你想知道更多关于 project X 的理念与密闻, 请点击[这里](./faq/about/)
-- 如果你想知道更多关于 project X 的足迹与成长, 请点击[这里](./about/news.md)
+- 如果你想知道更多关于 Project X 的足迹与成长, 请点击[这里](./about/news.md)
+- 现在 Project X 也发行 NFT 了！如果想拥有一枚 Project X NFT 或者想捐赠或者赞助 Project X，请点击[这里](https://github.com/XTLS/Xray-core/discussions/3633)
 
 ### License
 
 [Mozilla Public License Version 2.0](https://github.com/XTLS/Xray-core/blob/main/LICENSE)
 
 ### Stargazers over time
-
-> Project X 的 GitHub 主仓库 Xray-core 已获 6000+ stars；Project X 群人数 6000+，频道订阅数 4000+
 
 [![Stargazers over time](https://starchart.cc/XTLS/Xray-core.svg)](https://starchart.cc/XTLS/Xray-core)

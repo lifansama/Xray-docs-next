@@ -1,16 +1,16 @@
-import { path } from "@vuepress/utils";
-import { Theme } from "@vuepress/core";
-import { MermaidPlugin } from "./plugin/mermaidPlugin";
+// import { Theme } from "@vuepress/core";
+import { Theme } from "vuepress/core";
+// import { path } from "@vuepress/utils";
+import { path } from "vuepress/utils";
+import { defaultTheme } from "vuepress";
 
 export const docsPlugin: Theme = (options, app) => {
-  return {
+  return defaultTheme({
     name: "xray-docs-theme",
     extends: "@vuepress/theme-default",
     clientAppEnhanceFiles: path.resolve(__dirname, "clientAppEnhance.ts"),
-    extendsMarkdown: (md) => {
-      md.use(MermaidPlugin);
-    },
-  };
+
+  });
 };
 
 export default docsPlugin;

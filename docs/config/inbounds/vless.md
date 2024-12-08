@@ -1,13 +1,12 @@
-# VLESS
+# VLESS（XTLS Vision Seed）
 
 ::: danger
 目前 VLESS 没有自带加密，请用于可靠信道，如 TLS。
-目前 VLESS 不支持分享。
 :::
 
 VLESS 是一个无状态的轻量传输协议，它分为入站和出站两部分，可以作为 Xray 客户端和服务器之间的桥梁。
 
-与 [VMess](./vmess.md) 不同，VLESS 不依赖于系统时间，认证方式同样为 UUID，但不需要 alterId。
+与 [VMess](./vmess.md) 不同，VLESS 不依赖于系统时间，认证方式同样为 UUID。
 
 ## InboundConfigurationObject
 
@@ -18,7 +17,7 @@ VLESS 是一个无状态的轻量传输协议，它分为入站和出站两部�
       "id": "5783a3e7-e373-51cd-8642-c83782b807c5",
       "level": 0,
       "email": "love@xray.com",
-      "flow": "xtls-rprx-direct"
+      "flow": "xtls-rprx-vision"
     }
   ],
   "decryption": "none",
@@ -56,7 +55,7 @@ fallbacks 的具体配置请点击 [FallbackObject](../features/fallback.md#fall
   "id": "5783a3e7-e373-51cd-8642-c83782b807c5",
   "level": 0,
   "email": "love@xray.com",
-  "flow": "xtls-rprx-direct"
+  "flow": "xtls-rprx-vision"
 }
 ```
 
@@ -90,11 +89,7 @@ level 的值, 对应 [policy](../policy.md#policyobject) 中 `level` 的值。 �
 
 目前入站协议中有以下流控模式可选：
 
-- `xtls-rprx-origin`：最初的流控模式，此时客户端仅可选择 `xtls-rprx-origin` 和 `xtls-rprx-origin-udp443` 这两种流控模式。该模式纪念价值大于实际使用价值。
-- `xtls-rprx-direct`：**推荐**，所有平台皆可使用的典型流控方式，此时客户端可选择任何流控模式
+- 无 `flow` 或者 空字符： 使用普通 TLS 代理
+- `xtls-rprx-vision`：使用新 XTLS 模式 包含内层握手随机填充
 
-::: warning 注意
-当 `flow` 被指定时，还需要将该入站协议的 `streamSettings.security` 一项指定为 `xtls`，`tlsSettings` 改为 `xtlsSettings`。详情请参考 [streamSettings](../transport.md#streamsettingsobject)。
-:::
-
-此外，目前 XTLS 仅支持 TCP、mKCP、DomainSocket 这三种传输方式。
+此外，目前 XTLS 仅支持 TCP+TLS/Reality
